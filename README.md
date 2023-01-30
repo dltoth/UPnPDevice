@@ -4,14 +4,19 @@ Developing applications for Arduino (ESP8266 and ESP32) require creating custom 
 The set of classes include:
 
 ```
-  RootDevice       := A UPnP root device container. Root devices can have up to 8 embedded UPnPDevices and 
-                      up to 8 UPnPServices
-  UPnPDevice       := A base class for UPnP devices. UPnPDevices can have up to 8 UPnPServices
-  UPnPService      := A base class for UPnP services. Services have a callable HTTP interface
-  Sensor           := A UPnPDevice that has simple output based display, like a Thermometer or Clock
-  Control          := A UPnPDevice with more complex display, including user interaction, like a toggle
+  RootDevice       := A UPnP root device container. Root devices can have up to 8 embedded 
+                      UPnPDevices and up to 8 UPnPServices
+  UPnPDevice       := A base class for UPnP devices. UPnPDevices can have up to 8 
+                      UPnPServices
+  UPnPService      := A base class for UPnP services. Services have a callable HTTP 
+                      interface
+  Sensor           := A UPnPDevice that has simple output based display, like a Thermometer 
+                      or Clock
+  Control          := A UPnPDevice with more complex display, including user interaction, 
+                      like a toggle
   GetConfiguration := A UPnPService base class for returning device configuration in XML
-  SetConfiguration := A UPnPService base class for setting device configuration from callable HTTP interface
+  SetConfiguration := A UPnPService base class for setting device configuration from callable 
+                      HTTP interface
 ```
 
 Both Sensor and Control include GetConfiguration and SetConfiguration.
