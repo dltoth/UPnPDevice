@@ -22,7 +22,7 @@ Default display for RootDevice is to put Sensor HTML inline with it's HTML displ
 
 ### Default Device Hierarchy and Display
 
-See the sketch [UPnPDevice]() for a simple example of creating a device hierarchy. Note the following parts:
+See the sketch [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/UPnPDevice.ino) for a simple example of creating a device hierarchy. Note the following parts:
 
 #### Instantiating the Devices and Services
 
