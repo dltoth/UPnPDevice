@@ -16,3 +16,4 @@ The set of classes include:
 
 Both Sensor and Control include GetConfiguration and SetConfiguration.
 
+Default display for RootDevice is to put Sensor HTML inline with it's HTML display, and place Control HTML inline in an iFrame. 
