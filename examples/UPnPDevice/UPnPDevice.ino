@@ -1,16 +1,19 @@
 
 /**
- *  Boilerplate Test Harness
+ *  
  */
 
 #include "UPnPDevice.h"
 
 using namespace lsc;
 
-#define AP_SSID "MySSID"
-#define AP_PSK  "MyPSK"
+#define AP_SSID "My_SSID"
+#define AP_PSK  "MYPSK"
 #define SERVER_PORT 80
 
+/**
+ *   Conditional compilation for either ESP8266 or ESP32
+ */
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 ESP8266WebServer  server(SERVER_PORT);
@@ -23,12 +26,16 @@ WebServer*       svr = &server;
 #define          BOARD "ESP32"
 #endif
 
+/**
+ *   Device hierarchy will consist of a RootDevice (root) with two embedded devices (d1 and d2),
+ *   and two services (s1 and s2) attached to d1. 
+ */
 WebContext       ctx;
-WebContext*      c   = &ctx;
-
 RootDevice       root;
 UPnPDevice       d1;
+UPnPDevice       d2;
 UPnPService      s1;
+UPnPService      s2;
 
 void setup() {
   Serial.begin(115200);
@@ -48,43 +55,41 @@ void setup() {
   server.begin();
   ctx.setup(svr,WiFi.localIP(),SERVER_PORT);
   Serial.printf("Web Server started on %s:%d/\n",ctx.getLocalIPAddress().toString().c_str(),ctx.getLocalPort());
-  
-  d1.addService(&s1);
+
+/**
+ *  Build devices and set names and targets. Note that device targets must be unique
+ *  relative to the RootDevice
+ */ 
   d1.setDisplayName("Device 1");
-  d1.setTarget("embededDevice");
+  d1.setTarget("device1");
+  d2.setDisplayName("Device 2");
+  d2.setTarget("device2");
+
+/**
+ *  Build the services and set the heirarchy
+ */
   s1.setDisplayName("Service 1");
   s1.setTarget("service1");
-  root.setDisplayName("Device Test");
-  root.setTarget("device");  
-  root.addDevice(&d1);
+  s2.setDisplayName("Service 2");
+  s2.setTarget("service2");
+  d1.addServices(&s1,&s2);
+  root.setDisplayName("Root Device");
+  root.setTarget("root");  
+  root.addDevices(&d1,&d2);
+
+/**
+ *  Set up the device hierarchy and register HTTP request handlers
+ */
   root.setup(&ctx);
   
-  printInfo(&root,&d1);  
+/**
+ *  Print UPnPDevice info to Serial
+ */
+  UPnPDevice::printInfo(&root);  
+
 }
 
 void loop() {
   server.handleClient();
 }
 
-void printInfo(RootDevice* r, UPnPDevice* d) {
-  Serial.printf("RootDevice UUID is %s\n",r->uuid());
-  Serial.printf("Device UUID is %s\n",d->uuid());
-  char buffer[128];
-  char loc[32];
-  r->location(buffer,128,WiFi.localIP());
-  Serial.printf("Root Location is %s\n",buffer);
-  buffer[0] = '\0';
-  r->rootLocation(buffer,128,WiFi.localIP());
-  Serial.printf("             and %s\n",buffer);
-  
-  buffer[0] = '\0';
-  d->location(buffer,128,WiFi.localIP());
-  Serial.printf("%s Location is %s\n",d->getDisplayName(),buffer);
-  Serial.printf("%s Services:\n",d->getDisplayName());
-  for(int i=0; i<d->numServices(); i++) {
-    UPnPService* s = d->service(i);
-    buffer[0] = '\0';
-    s->location(buffer,128,WiFi.localIP());
-    Serial.printf("    Location for %s is %s\n",s->getDisplayName(),buffer);
-  } 
-}
