@@ -21,6 +21,12 @@ UPnPObject::UPnPObject() {
 
 void UPnPObject::setType(const char* type) {strlcpy(_type, type, sizeof(_type));}
 void UPnPObject::setDisplayName(const char* name) {strlcpy(_displayName, name, sizeof(_displayName));}
+
+/** 
+ *  Target is the relative URL for this Object (RootDevice, Device, or Service). The complete URL can be constructed as 
+ *  "/rootTarget/deviceTarget/serviceTarget" or "/rootTarget/serviceTarget". The complete URL is used at RootDevice setup
+ *  in setting HTTP handlers, so target must be set prior to RootDevice setup.
+ */
 void UPnPObject::setTarget(const char* target) {
   if( target[0] == '/' ) strlcpy(_target, target+1, sizeof(_target));
   else strlcpy(_target, target, sizeof(_target));

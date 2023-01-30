@@ -149,16 +149,24 @@ uint32_t getChipID() {
 }
 
 void UPnPDevice::printInfo(UPnPDevice* d) {
-  Serial.printf("%s:\n   UUID: %s\n   Type: %s\n",d->getDisplayName(),d->uuid(),d->getType());
+  RootDevice* r = (RootDevice*)(d->asRootDevice());
+  if( r != NULL ) Serial.printf("RootDevice %s:\n   UUID: %s\n   Type: %s\n",d->getDisplayName(),d->uuid(),d->getType());
+  else Serial.printf("%s:\n   UUID: %s\n   Type: %s\n",d->getDisplayName(),d->uuid(),d->getType());
   char buffer[128];
   d->location(buffer,128,WiFi.localIP());
   Serial.printf("   Location is %s\n",buffer);
-  Serial.printf("   %s Services:\n",d->getDisplayName());
+  if( d->numServices() > 0 ) Serial.printf("   %s Services:\n",d->getDisplayName());
+  else Serial.printf("   %s has no Services\n",d->getDisplayName());
   for(int i=0; i<d->numServices(); i++) {
     UPnPService* s = d->service(i);
     buffer[0] = '\0';
     s->location(buffer,128,WiFi.localIP());
     Serial.printf("      %s:\n         Type: %s\n         Location is %s\n",s->getDisplayName(),s->getType(),buffer);
+  }
+  if( r != NULL ) {
+    if( r->numDevices() > 0 ) Serial.printf("%s Devices:\n",r->getDisplayName());
+    else Serial.printf("%s has no Devices\n",r->getDisplayName());
+    for(int i=0; i<r->numDevices(); i++) printInfo(r->device(i));    
   } 
 }
 
@@ -322,10 +330,11 @@ void RootDevice::location(char buffer[], int buffSize, IPAddress ifc) {
   snprintf(buffer,buffSize,"http://%s:%d/%s",ifc.toString().c_str(),serverPort(),getTarget());
 }
 
+/**
 void RootDevice::printInfo(RootDevice* r) {
   UPnPDevice::printInfo(r);  
   for(int i=0; i<r->numDevices(); i++) UPnPDevice::printInfo(r->device(i));
-
 }
+**/
 
 } // End of namespace lsc

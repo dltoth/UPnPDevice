@@ -150,11 +150,6 @@ class RootDevice : public UPnPDevice {
      virtual UPnPDevice*     asDevice()     {return this;}
      virtual UPnPService*    asService()    {return NULL;}
      
-/**
- *   Send UPnP info to Serial
- */
-     static void             printInfo(RootDevice* r);
-
      protected:
      virtual void            formatContent(char buffer[], int size);
      
