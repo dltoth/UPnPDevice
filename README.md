@@ -1,2 +1,2 @@
 # UPnPDevice
-UPnP Base Device and Service Classes for Arduino
+Developing applications for Arduino (ESP8266 and ESP32) require creating custom HTML for the user interface. UPnPDevice is a framework for HTML html user interface that follows the [UPnP Device Arcihtecthre](http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf). When coupled with the additional [SSDP library]() also provides simple service discovery. This library provides a set of base classes for building a UPnP Device hierarchy and advertising it over a local network. 
