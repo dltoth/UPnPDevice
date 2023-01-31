@@ -19,7 +19,7 @@ The set of classes include:
                       HTTP interface
 ```
 
-Both Sensor and Control include GetConfiguration and SetConfiguration.
+Both Sensor and Control include default GetConfiguration and SetConfiguration Services.
 
 Default display for RootDevice is to put Sensor HTML inline with it's HTML display, and place Control HTML inline in an iFrame. UPnPDevices that are neither Sensor nor Control are displayed as an HTML button, where selection triggers device display. Default UPnPDevice display is to present each of its services as HTML buttons. 
 
