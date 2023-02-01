@@ -29,12 +29,19 @@ Default display for RootDevice is to put Sensor HTML inline with it's HTML displ
 
 See the sketch [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/UPnPDevice.ino) for a simple example of creating a device hierarchy. Note the following parts:
 
+#### Namespace Declaration
+The Leelanau Software Company namespace is used for all of the libraries [SSDP](https://github.com/dltoth/ssdp), [UPnPDevice](https://github.com/dltoth/UPnPDevice), [CommonUtil](https://github.com/dltoth/CommonUtil), [WiFiPortal](https://github.com/dltoth/WiFiPortal), and [DeviceLib](https://github.com/dltoth/DeviceLib). The compiler won't find anything without this declaration.
+
+```
+using namespace lsc;
+```
+
 #### Instantiating the Devices and Services
 
 ```
 /**
- *   Device hierarchy will consist of a RootDevice (root) with two embedded devices (d1 and d2),
- *   and two services (s1 and s2) attached to d1. 
+ *   Device hierarchy will consist of a RootDevice (root) with two embedded devices 
+ *   (d1 and d2), and two services (s1 and s2) attached to d1. 
  */
 WebContext       ctx;
 RootDevice       root;
@@ -118,7 +125,9 @@ Device 2:
    Device 2 has no Services
 ```
 
-From the optput, the root device will be displayed at http://10.0.0.165:80/ and the display will look like
+In this example, the RootDevice is displayed at http://10.0.0.165:80/root, and the display consist of a list of buttons, one for each of *Device 1* and *Device 2* (see figure 1 below). Note that the RootDevice display is slightly different at the base http://10.0.0.165:80/. In this view, Sensors and Controls are displayed inline and other UPnPDevices are displayed as buttons (see the discussion on Sensors below).
+
+
 
 
 
