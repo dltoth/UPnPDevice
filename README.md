@@ -127,6 +127,7 @@ Device 2:
 
 In this example, the RootDevice is displayed at http://10.0.0.165:80/root, and the display consist of a list of buttons, one for each of *Device 1* and *Device 2* (see figure 1 below). Note that the RootDevice display is slightly different at the base http://10.0.0.165:80/. In this view, Sensors and Controls are displayed inline and other UPnPDevices are displayed as buttons (see the discussion on Sensors below).
 
-![image1](/assets/image1.png)
+*Figure 1 - RootDevice display at http://10.0.0.165:80/root*
 
+![image1](/assets/image1.png)
 ### Simple Sensor Display
