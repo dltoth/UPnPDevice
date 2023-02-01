@@ -257,13 +257,13 @@ or
    urn:CompanyName:service:serviceName:version
 ```
 
-Where CompanyName substitutes "." with "-". Target is the HTTP target for device display and must be unique with respect to the RootDevice. In the case of a UPnPService, target must be unique with respect to the UPnPDevice it is attached to. The constructor below sets the *DeviceType* to "urn:LeelanauSoftwareCo-com:device:SimpleSensor:1" and target to *sensor*.
+Where CompanyName substitutes "." with "-". Target is the HTTP target for device display and must be unique with respect to the RootDevice. In the case of a UPnPService, target must be unique with respect to the UPnPDevice it is attached to. The constructor below sets the *DeviceType* to "urn:LeelanauSoftwareCo-com:device:SimpleSensor:1" and *target* to "sensor".
 
 ```
 /**
  *   Type is the UPnP required device type, defined as urn:CompanyName:device:deviceName:version where CompanyName 
- *   substitutes "." with "-". Target is the Http target for device display, which MUST be unique under the RootDevice.
- *   In this case:
+ *   substitutes "." with "-". Target is the Http target for device display, which MUST be unique under the 
+ *   RootDevice. In this case:
  *      http://ip-address:port/rootTarget/sensor 
  *   where rootTarget is set on the RootDevice.
  */
