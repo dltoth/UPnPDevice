@@ -15,7 +15,7 @@ INITIALIZE_STATIC_TYPE(SimpleSensor);
 
 /**
  *   Type is the UPnP required device type, defined as urn:CompanyName:device:deviceName:version where CompanyName 
- *   substitutes "." with "_". Target is the Http target for device display, which MUST be unique under the RootDevice.
+ *   substitutes "." with "-". Target is the Http target for device display, which MUST be unique under the RootDevice.
  *   In this case:
  *      http://ip-address:port/rootTarget/sensor 
  *   where rootTarget is set on the RootDevice.
