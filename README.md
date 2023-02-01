@@ -36,7 +36,7 @@ The Leelanau Software Company namespace is used for all of the libraries [SSDP](
 using namespace lsc;
 ```
 
-#### Instantiating the Devices and Services
+#### Instantiating Devices and Services
 
 ```
 /**
@@ -55,8 +55,9 @@ UPnPService      s2;
 
 ```
 /**
- *  Build devices and set names and targets. Note that device targets must be unique
- *  relative to the RootDevice
+ *  Build devices and set names and targets. Note that device and service targets
+ *  must be unique relative to the RootDevice (or UPnPDevice) as these are used
+ *  to set HTTP request handlers on the web server
  */ 
   d1.setDisplayName("Device 1");
   d1.setTarget("device1");
@@ -131,3 +132,146 @@ In this example, the RootDevice is displayed at http://10.0.0.165:80/root, and t
 
 ![image1](/assets/image1.png)
 ### Simple Sensor Display
+As noted above, Sensor and Control display is different at the base url than at the root target. We will see how this works by building a simple Sensor class that displays the message "Hello from SimpleSensor". Starting with the class definition in [SimpleSensor.h](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SimpleSensor.h), notice the following:
+
+#### Namespace declaration
+```
+using namespace lsc;
+```
+
+#### Class Declaration
+SimpleSensor derives from Sensor
+
+```
+/**
+ *   Simple Sensor Example with default configuration
+ **/
+class SimpleSensor : public Sensor {
+```
+
+#### Required Constructors
+These constructors are required by [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPDevice.h), we'll see why in the class implementation.
+
+```
+      SimpleSensor();
+      SimpleSensor( const char* displayName, const char* target);
+```
+
+#### Additional Required Methods
+Setup() is required for implementation specific initialization. Here we use it to set the initial message, although that could have been done in any number of other ways. Content() is important, as that's the method that will supply HTML to RootDevice.
+
+```
+/**
+ *   Virtual Functions required for UPnPDevice
+ */
+      void           setup(WebContext* svr);
+
+/**
+ *   Virtual Functions required by Sensor
+ */
+      void           content(char buffer[], int bufferSize);
+
+
+```
+
+#### Runtime Type Identification (RTTI)
+Runtime Type Identification is required by all UPNPDevices and UPnPServices; it's part of the base UPnPObject class definition allowing typesafe casting. 
+
+The following macros are used to define RTTI:
+
+```
+/**
+ *   Macros to define the following Runtime Type Info:
+ *     private: static const ClassType  _classType;             
+ *     public:  static const ClassType* classType();   
+ *     public:  virtual void*           as(const ClassType* t);
+ *     public:  virtual boolean         isClassType( const ClassType* t);
+ */
+      DEFINE_RTTI;
+      DERIVED_TYPE_CHECK(Sensor);
+```
+
+Notice the macro DERIVED_TYPE_CHECK(Sensor) declares SimpleSensor as being a subclass of Sensor. Without explicitly including these macros SimpleSensor would inherit its type from Sensor and be considered a Sensor as far as RTTI.
+
+First note that any UPnPObject can retrieve a pointer to the RootDevice as:
+
+```
+   RootDevice* root = rootDevice();
+```
+
+So, if your RootDevice is expected to include a [SoftwareClock](https://github.com/dltoth/DeviceLib/blob/main/src/SoftwareClock.h), then you can use the RootDevice method
+
+```
+   UPnPDevice* getDevice(const ClassType* t)
+```
+
+to retrieve a pointer to a SoftwareClock as follows:
+
+```
+   RootDevice* root = rootDevice();
+   SoftwareClock* clock = NULL;
+   if( root != NULL ) clock = (SoftwardClock*)(root->getDevice(SoftwareClock::classType()));
+   if( clock != NULL ) {...}
+```
+
+If SoftwareClock is an embedded device and setup() has been called on the RootDevice, clock will be non-NULL. 
+
+**Important:** Setup instantiates the device hierarchy, so rootDevice() will necessarily return NULL until it's called.
+
+#### Define a Message Buffer
+We use a fixed length character array for the message buffer
+
+```
+   protected:
+    void          setMessage(const char* m);
+
+    char          _msg[BUFF_SIZE];
+```
+
+So now let's move on the the implementation file [SimpleSensor.cpp](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SimpleSensor.cpp) and notice the following:
+
+#### Message Template in PROGMEM
+A template for the message HTML is defined in PROGMEM
+
+```
+const char  sensor_msg[]  PROGMEM = "<p align=\"center\">Sensor Message is:  %s </p>";
+``` 
+
+Once again using the lsc namespace, and then static RTTI type initialization is done here
+
+```
+/** Leelanau Software Company namespace 
+*  
+*/
+using namespace lsc;
+
+INITIALIZE_STATIC_TYPE(SimpleSensor);
+```
+
+#### UPnPDevice Construction
+UPnPDevice and UPnPService construction require a *Device Type* and *Target*. Device Type is a UPnP required construct of the form
+
+```
+   urn:CompanyName:device:deviceName:version
+or
+   urn:CompanyName:service:serviceName:version
+```
+
+Where CompanyName substitutes "." with "-". Target is the HTTP target for device display and must be unique with respect to the RootDevice. In the case of a UPnPService, target must be unique with respect to the UPnPDevice it is attached to. The constructor below sets the *DeviceType* to "urn:LeelanauSoftwareCo-com:device:SimpleSensor:1" and target to *sensor*.
+
+```
+/**
+ *   Type is the UPnP required device type, defined as urn:CompanyName:device:deviceName:version where CompanyName 
+ *   substitutes "." with "-". Target is the Http target for device display, which MUST be unique under the RootDevice.
+ *   In this case:
+ *      http://ip-address:port/rootTarget/sensor 
+ *   where rootTarget is set on the RootDevice.
+ */
+SimpleSensor::SimpleSensor() : Sensor("urn:LeelanauSoftwareCo-com:device:SimpleSensor:1","sensor") {
+  setDisplayName("Simple Sensor");
+}
+
+SimpleSensor::SimpleSensor(const char* type, const char* target) : Sensor(type, target) {
+  setDisplayName("Simple Sensor");
+}
+```
