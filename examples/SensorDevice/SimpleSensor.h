@@ -16,7 +16,7 @@ using namespace lsc;
 
 /**
  *   Simple Sensor Example with default configuration
-**/
+ **/
 class SimpleSensor : public Sensor {
 
     public:
