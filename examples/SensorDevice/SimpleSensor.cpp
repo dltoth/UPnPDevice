@@ -43,7 +43,7 @@ void SimpleSensor::setMessage(const char* m) {
 
 void SimpleSensor::setup(WebContext* svr) {
 /**
- *   Make sure Sendor::setup() is called prior to any other required setup.
+ *   Make sure Sensor::setup() is called prior to any other required setup.
  */
   Sensor::setup(svr);
   setMessage("Hello from Simple Sensor");
