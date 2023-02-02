@@ -51,7 +51,7 @@ void setup() {
 
   root.addDevice(&s);
   root.setDisplayName("Sensor Test");
-  root.setTarget("device");  
+  root.setTarget("root");  
   root.setup(&ctx);
   
 /**
