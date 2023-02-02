@@ -93,8 +93,9 @@ UPnPService      s2;
 }
 
 ```
+**Note:** The RootDevice registers HTTP request handlers for both the base URL (http://IPAddress:port/) and root target URL (http://IPAddress:port/root/), so each RootDevice requires its own WebServer with unique port. It is customary however, to have only a single rootDevice per ESP device. This shouldn't present a problem since the RootDevice functions mainly as a container for embedded UPnPDevices, which in turn provide functionality.
 
-Output to Serial will be
+In the example above, output to Serial will be
 
 ```
 
@@ -126,12 +127,12 @@ Device 2:
    Device 2 has no Services
 ```
 
-In this example, the RootDevice is displayed at http://10.0.0.165:80/root, and the display consist of a list of buttons, one for each of *Device 1* and *Device 2* (see figure 1 below). Note that the RootDevice display is slightly different at the base http://10.0.0.165:80/. In this view, Sensors and Controls are displayed inline and other UPnPDevices are displayed as buttons (see the discussion on Sensors below).
+In this example, the RootDevice is displayed at http://10.0.0.165:80/root, and the display will consist of a list of buttons, one for each of *Device 1* and *Device 2* (see figure 1 below). Note that the RootDevice display is slightly different at the base http://10.0.0.165:80/. In this view, Sensors and Controls are displayed inline and other UPnPDevices are displayed as buttons (see the discussion on Sensors below).
 
 *Figure 1 - RootDevice display at http://10.0.0.165:80/root*
 
 ![image1](/assets/image1.png)
-### Simple Sensor Display
+### Creating a Custom Sensor
 As noted above, Sensor and Control display is different at the base url than at the root target. We will see how this works by building a simple Sensor class that displays the message "Hello from SimpleSensor". Starting with the class definition in [SimpleSensor.h](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SimpleSensor.h), notice the following:
 
 #### Namespace declaration
@@ -193,30 +194,24 @@ The following macros are used to define RTTI:
 
 Notice the macro DERIVED_TYPE_CHECK(Sensor) declares SimpleSensor as being a subclass of Sensor. Without explicitly including these macros SimpleSensor would inherit its type from Sensor and be considered a Sensor as far as RTTI.
 
+##### Why RTTI
+Since each embedded UPnPDevice provides its own functionality, one device may rely on another. For example, a timer controlled relay may require a [SoftwareClock](https://github.com/dltoth/DeviceLib/blob/main/src/SoftwareClock.h), or a humidity controlled fan may require a [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h). Since you are building your device, you now about its onboard embedded devices. 
+
 First note that any UPnPObject can retrieve a pointer to the RootDevice as:
 
 ```
    RootDevice* root = rootDevice();
 ```
 
-So, if your RootDevice is expected to include a [SoftwareClock](https://github.com/dltoth/DeviceLib/blob/main/src/SoftwareClock.h), then you can use the RootDevice method
+So, if your RootDevice is expected to include a [SoftwareClock](https://github.com/dltoth/DeviceLib/blob/main/src/SoftwareClock.h), then you can use the static RootDevice method
 
 ```
-   UPnPDevice* getDevice(const ClassType* t)
+   SoftwareClock* clock = (SoftwareClock*)RootDevice::getDevice(rootDevice(), SoftwareClock::classType());
 ```
 
-to retrieve a pointer to a SoftwareClock as follows:
+to retrieve a pointer to a SoftwareClock. If SoftwareClock is an embedded device and setup() has been called on the RootDevice, clock will be non-NULL. 
 
-```
-   RootDevice* root = rootDevice();
-   SoftwareClock* clock = NULL;
-   if( root != NULL ) clock = (SoftwardClock*)(root->getDevice(SoftwareClock::classType()));
-   if( clock != NULL ) {...}
-```
-
-If SoftwareClock is an embedded device and setup() has been called on the RootDevice, clock will be non-NULL. 
-
-**Important:** Setup instantiates the device hierarchy, so rootDevice() will necessarily return NULL until it's called.
+**Important:** RootDevice setup() instantiates the device hierarchy, so rootDevice() will necessarily return NULL until all UPnPDevices and UPnPServices have been added and setup has been called.
 
 #### Define a Message Buffer
 We use a fixed length character array for the message buffer
@@ -275,3 +270,62 @@ SimpleSensor::SimpleSensor(const char* type, const char* target) : Sensor(type, 
   setDisplayName("Simple Sensor");
 }
 ```
+
+#### Supply HTML Content to RootDevice
+Next we define the content() method, notice it simply fills the input *buffer* with HTML based on the pre-defined PROGMEM template and the message from *getMessage()*.
+
+```
+void SimpleSensor::content(char buffer[], int bufferSize) {
+/**
+ *   Fill buffer with HTML
+ */
+  snprintf_P(buffer,bufferSize,sensor_msg,getMessage());
+}
+```
+
+#### Define Methods to Set Message and Setup Device
+Setting the message fills the message buffer
+
+```
+void SimpleSensor::setMessage(const char* m) {
+  if( m != NULL ) {
+      snprintf(_msg,BUFF_SIZE,"%s",m);
+  }
+}
+```
+The setup function initializes the message buffer to "Hello from Simple Sensor"
+
+```
+void SimpleSensor::setup(WebContext* svr) {
+/**
+ *   Make sure Sensor::setup() is called prior to any other required setup.
+ */
+  Sensor::setup(svr);
+  setMessage("Hello from Simple Sensor");
+}
+```
+The Sketch that instantiates a SimpleSensor and adds it to a RootDevice can be found [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino). We won't go into sketch detail here, but flash your device and point a browser to the device base URL (http://IPAdress:80/). You will see figure 2 below.
+
+*Figure 2 - SimpleSensor display at http://10.0.0.165:80/
+
+![image2](/assets/image2.png)
+
+Notice Sensor displays is its message, and selecting the "This Device" button will display all of the RootDevice embedded devices as buttons. In this case, the single "Simple Sensor" button on figure 3.
+
+*Figure 3 - SimpleSensor display at http://10.0.0.165:80/root/*
+
+![image3](/assets/image3.png)
+
+Now, selecting the "Simple Sensor" button will trigger device display, which is Sensor display with a "Configure" button, as in figure 4.
+
+*Figure 4 - SimpleSensor device at http://10.0.0.165/root/sensor/*
+
+![image4](/assets/image4.png)
+
+Now, selecting the "Configure" button will bring up default configuration. Default configuration for both Sensors and Controls is simply their display name, as in figure 5.
+
+*Figure 5 - SimpleSensor device at http://10.0.0.165/device/sensor/setConfiguration/configForm*
+
+![image5](/assets/image5.png)
+
+
