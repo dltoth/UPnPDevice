@@ -256,9 +256,9 @@ Where CompanyName substitutes "." with "-". Target is the HTTP target for device
 
 ```
 /**
- *   Type is the UPnP required device type, defined as urn:CompanyName:device:deviceName:version where CompanyName 
- *   substitutes "." with "-". Target is the Http target for device display, which MUST be unique under the 
- *   RootDevice. In this case:
+ *   Type is the UPnP required device type, defined as urn:CompanyName:device:deviceName:version 
+ *   where CompanyName substitutes "." with "-". Target is the Http target for device display, 
+ *   which MUST be unique under the RootDevice. In this case:
  *      http://ip-address:port/rootTarget/sensor 
  *   where rootTarget is set on the RootDevice.
  */
@@ -309,19 +309,16 @@ The Sketch that instantiates a SimpleSensor and adds it to a RootDevice can be f
 *Figure 2 - SimpleSensor display at http://10.0.0.165:80/
 
 ![image2](/assets/image2.png)
-
 Notice Sensor displays is its message, and selecting the "This Device" button will display all of the RootDevice embedded devices as buttons. In this case, the single "Simple Sensor" button on figure 3.
 
 *Figure 3 - SimpleSensor display at http://10.0.0.165:80/root/*
 
 ![image3](/assets/image3.png)
-
 Now, selecting the "Simple Sensor" button will trigger device display, which is Sensor display with a "Configure" button, as in figure 4.
 
 *Figure 4 - SimpleSensor device at http://10.0.0.165/root/sensor/*
 
 ![image4](/assets/image4.png)
-
 Now, selecting the "Configure" button will bring up default configuration. Default configuration for both Sensors and Controls is simply their display name, as in figure 5.
 
 *Figure 5 - SimpleSensor device at http://10.0.0.165/device/sensor/setConfiguration/configForm*
