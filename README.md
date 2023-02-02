@@ -223,6 +223,17 @@ We use a fixed length character array for the message buffer
     char          _msg[BUFF_SIZE];
 ```
 
+#### Copy Construction and Destruction are Not Allowed
+**Important:** UPnPObjects should be declared above the ESP setup() function as global variables and any reference to these objects should be by pointer to these declared objects. Memory is allocated for the life of the application. 
+```
+/**
+ *   Copy Construction and Deletion are not allowed
+ */
+    private:
+    SimpleSensor(const SimpleSensor&)= delete;
+    SimpleSensor& operator=(const SimpleSensor&)= delete;
+```
+
 So now let's move on the the implementation file [SimpleSensor.cpp](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SimpleSensor.cpp) and notice the following:
 
 #### Message Template in PROGMEM
@@ -328,4 +339,68 @@ Now, selecting the "Configure" button will bring up default configuration. Defau
 
 ![image5](/assets/image5.png)
 
+### Creating Custom Configuration
+Now let's look at creating custom configuration for SimpleSensor, see [SensorWithConfig.h](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorWithConfig.h) and notice SensorWithConfig is a subclass of SimpleSensor. In what follows, we will only discuss the important differences.
 
+#### Define Required Methods
+SimpleSensor has both SetConfiguration and GetConfiguration services. SetConfiguration requires a form handler to display an HTML configuration form, and a *submit* method for that form. Also since we are customizing configuration, we should also reflect that customization in the *getConfiguation* method.
+
+```
+/**
+ *    Methods to customize configuration
+ */
+      void           configForm(WebContext* svr);
+      void           getConfiguration(WebContext* svr);
+      void           setConfiguration(WebContext* svr);
+
+```
+#### Dont Forget RTTI
+SensorWithConfig is a subclass of Sensor
+
+```
+      DEFINE_RTTI;
+      DERIVED_TYPE_CHECK(Sensor);
+```
+
+Now let's move on the the implementation file [SensorWithConfig.cpp](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorWithConfig.cpp).
+
+#### Define PROGMEM Templates
+
+Define the template used for GetConfiguration. By convention it has a standard XML style (not enforced). Notice it returns configuration from the base class (display name) and adds the message.
+
+```
+/**
+ *   Config template defines a bit of XML to return device configuration. It MUST be of the following form:
+ *      <?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+ *         <config>
+ *            ...
+ *         </config>
+ *
+ *   and SHOULD include 
+ *         <displayName>Device Display Name</displayName>
+ */
+const char  SensorWithConfig_config_template[]  PROGMEM = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                                                             "<config>"
+                                                                "<displayName>%s</displayName>"
+                                                                "<msg>%s</msg>"
+                                                               "</config>";
+
+```
+
+The HTML form template includes text input for display name from Sensor, and adds text input for the mesage.
+
+```
+/**
+ *   Config Form template to allow input of Sensor message and display name
+ *   It includes the url for form submit, sensor display name, sensor message, and url for the cancel button
+ */
+const char  SensorWithConfig_config_form[] PROGMEM = "<br><br><form action=\"%s\">"             // Form submit path
+            "<div align=\"center\">"
+              "<label for=\"displayName\">Sensor Name &nbsp &nbsp</label>"
+              "<input type=\"text\" placeholder=\"%s\" name=\"displayName\"><br><br>"           // Sensor displayName
+              "<label for=\"msg\">Sensor Message &nbsp </label>"
+              "<input type=\"text\" placeholder=\"%s\" name=\"msg\">&nbsp<br><br>"              // Sensor Message     
+              "<button class=\"fmButton\" type=\"submit\">Submit</button>&nbsp&nbsp"
+              "<button class=\"fmButton\" type=\"button\" onclick=\"window.location.href=\'%s\';\">Cancel</button>"
+            "</div></form>";
+```
