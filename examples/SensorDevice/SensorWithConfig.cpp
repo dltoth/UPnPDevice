@@ -22,15 +22,16 @@ const char  SensorWithConfig_config_template[]  PROGMEM = "<?xml version=\"1.0\"
 
 /**
  *   Config Form template to allow input of Sensor message and display name
+ *   It includes the url for form submit, sensor display name, sensor message, and url for the cancel button
  */
-const char  SensorWithConfig_config_form[] PROGMEM = "<br><br><form action=\"%s\">"             // Form submit path                                                                              // Service path
+const char  SensorWithConfig_config_form[] PROGMEM = "<br><br><form action=\"%s\">"             // Form submit path
             "<div align=\"center\">"
               "<label for=\"displayName\">Sensor Name &nbsp &nbsp</label>"
-              "<input type=\"text\" placeholder=\"%s\" name=\"displayName\"><br><br>"           // Sensor displayName                                                                     // Device display name
+              "<input type=\"text\" placeholder=\"%s\" name=\"displayName\"><br><br>"           // Sensor displayName
               "<label for=\"msg\">Sensor Message &nbsp </label>"
               "<input type=\"text\" placeholder=\"%s\" name=\"msg\">&nbsp<br><br>"              // Sensor Message     
               "<button class=\"fmButton\" type=\"submit\">Submit</button>&nbsp&nbsp"
-              "<button class=\"fmButton\" type=\"button\" onclick=\"window.location.href=\'%s\';\">Cancel</button>"                                             // Device path
+              "<button class=\"fmButton\" type=\"button\" onclick=\"window.location.href=\'%s\';\">Cancel</button>"
             "</div></form>";
 
 /** Leelanau Software Company namespace 
