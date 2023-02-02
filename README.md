@@ -211,7 +211,7 @@ So, if your RootDevice is expected to include a [SoftwareClock](https://github.c
 
 to retrieve a pointer to a SoftwareClock. If SoftwareClock is an embedded device and setup() has been called on the RootDevice, clock will be non-NULL. 
 
-**Important:** RootDevice setup() instantiates the device hierarchy, so rootDevice() will necessarily return NULL until all UPnPDevices and UPnPServices have been added and setup has been called.
+**Important:** RootDevice setup() instantiates the device hierarchy, so RootDevice::getDevice() will necessarily return NULL until all UPnPDevices and UPnPServices have been added and setup has been called.
 
 #### Define a Message Buffer
 We use a fixed length character array for the message buffer
@@ -293,7 +293,7 @@ void SimpleSensor::setMessage(const char* m) {
   }
 }
 ```
-The setup function initializes the message buffer to "Hello from Simple Sensor"
+The setup function initializes the message buffer to "Hello from Simple Sensor". Be sure to call *Sensor::setup()* on the base class to assure it is properly setup prior to any subclass setup.
 
 ```
 void SimpleSensor::setup(WebContext* svr) {
@@ -309,16 +309,19 @@ The Sketch that instantiates a SimpleSensor and adds it to a RootDevice can be f
 *Figure 2 - SimpleSensor display at http://10.0.0.165:80/
 
 ![image2](/assets/image2.png)
+
 Notice Sensor displays is its message, and selecting the "This Device" button will display all of the RootDevice embedded devices as buttons. In this case, the single "Simple Sensor" button on figure 3.
 
 *Figure 3 - SimpleSensor display at http://10.0.0.165:80/root/*
 
 ![image3](/assets/image3.png)
+
 Now, selecting the "Simple Sensor" button will trigger device display, which is Sensor display with a "Configure" button, as in figure 4.
 
 *Figure 4 - SimpleSensor device at http://10.0.0.165/root/sensor/*
 
 ![image4](/assets/image4.png)
+
 Now, selecting the "Configure" button will bring up default configuration. Default configuration for both Sensors and Controls is simply their display name, as in figure 5.
 
 *Figure 5 - SimpleSensor device at http://10.0.0.165/device/sensor/setConfiguration/configForm*
