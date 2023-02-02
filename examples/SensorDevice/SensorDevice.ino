@@ -29,7 +29,6 @@ WebContext*      c   = &ctx;
 
 RootDevice       root;
 SimpleSensor     s;
-SensorWithConfig swc;
 
 void setup() {
   Serial.begin(115200);
@@ -50,7 +49,7 @@ void setup() {
   ctx.setup(svr,WiFi.localIP(),SERVER_PORT);
   Serial.printf("Web Server started on %s:%d/\n",ctx.getLocalIPAddress().toString().c_str(),ctx.getLocalPort());
 
-  root.addDevices(&s,&swc);
+  root.addDevice(&s);
   root.setDisplayName("Sensor Test");
   root.setTarget("device");  
   root.setup(&ctx);
@@ -60,25 +59,10 @@ void setup() {
  * Print UPnP Info about RootDevice, Services, and embedded Devices
  * 
  */
-  printInfo(&root);
-  for(int i=0;i<root.numDevices(); i++) {printInfo(root.device(i));}
+  UPnPDevice::printInfo(&root);
   
 }
 
 void loop() {
   server.handleClient();
-}
-
-void printInfo(UPnPDevice* d) {
-  Serial.printf("%s:\n   UUID: %s\n   Type: %s\n",d->getDisplayName(),d->uuid(),d->getType());
-  char buffer[128];
-  d->location(buffer,128,WiFi.localIP());
-  Serial.printf("   Location is %s\n",buffer);
-  Serial.printf("   %s Services:\n",d->getDisplayName());
-  for(int i=0; i<d->numServices(); i++) {
-    UPnPService* s = d->service(i);
-    buffer[0] = '\0';
-    s->location(buffer,128,WiFi.localIP());
-    Serial.printf("      %s:\n         Type: %s\n         Location is %s\n",s->getDisplayName(),s->getType(),buffer);
-  } 
 }
