@@ -21,22 +21,27 @@ The set of classes include:
 
 Both Sensor and Control include default GetConfiguration and SetConfiguration Services.
 
-Default display for RootDevice is to put Sensor HTML inline with it's HTML display, and place Control HTML inline in an iFrame. UPnPDevices that are neither Sensor nor Control are displayed as an HTML button, where selection triggers device display. Default UPnPDevice display is to present each of its services as HTML buttons. 
+Default display for RootDevice is to put Sensor HTML inline with it's HTML display, and place a link to the Control in an iFrame. UPnPDevices that are neither Sensor nor Control are displayed as an HTML button, where selection triggers device display. Default UPnPDevice display is to present each of its services as HTML buttons. 
 
-## Simple Examples
+In what follows we will detail 4 examples:
+ 1. UPnPDevice hierarchy
+ 2. Creating a simple Sensor that displays a message
+ 3. Adding configuration to that Sensor
+ 4. Creating a simple control implementing a toggle.
 
-### Default Device Hierarchy and Display
+## Default Device Hierarchy and Display
 
 See the sketch [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/UPnPDevice.ino) for a simple example of creating a device hierarchy. Note the following parts:
 
-#### Namespace Declaration
+**Namespace Declaration**
+
 The Leelanau Software Company namespace is used for all of the libraries [SSDP](https://github.com/dltoth/ssdp), [UPnPDevice](https://github.com/dltoth/UPnPDevice), [CommonUtil](https://github.com/dltoth/CommonUtil), [WiFiPortal](https://github.com/dltoth/WiFiPortal), and [DeviceLib](https://github.com/dltoth/DeviceLib). The compiler won't find anything without this declaration.
 
 ```
 using namespace lsc;
 ```
 
-#### Instantiating Devices and Services
+**Instantiating Devices and Services**
 
 ```
 /**
@@ -51,7 +56,7 @@ UPnPService      s1;
 UPnPService      s2;
 ```
 
-#### Building Devices and Setting Hierarchy
+**Building Devices and Setting Hierarchy**
 
 ```
 /**
@@ -77,7 +82,7 @@ UPnPService      s2;
   root.addDevices(&d1,&d2);
 ```
 
-#### Registerring HTTP Request Handlers
+**Registerring HTTP Request Handlers**
 
 ```
 /**
@@ -93,7 +98,7 @@ UPnPService      s2;
 }
 
 ```
-**Note:** The RootDevice registers HTTP request handlers for both the base URL (http://IPAddress:port/) and root target URL (http://IPAddress:port/root/), so each RootDevice requires its own WebServer with unique port. It is customary however, to have only a single rootDevice per ESP device. This shouldn't present a problem since the RootDevice functions mainly as a container for embedded UPnPDevices, which in turn provide functionality.
+**Note:** The RootDevice registers HTTP request handlers for both the base URL (http://IPAddress:port/) and root target URL (http://IPAddress:port/root/), so each RootDevice requires its own WebServer with unique port. It is customary however, to have only a single RootDevice per ESP device. This shouldn't present a problem since the RootDevice functions mainly as a container for embedded UPnPDevices, which in turn provide functionality.
 
 In the example above, output to Serial will be
 
@@ -132,15 +137,16 @@ In this example, the RootDevice is displayed at http://10.0.0.165:80/root, and t
 *Figure 1 - RootDevice display at http://10.0.0.165:80/root*
 
 ![image1](/assets/image1.png)
-### Creating a Custom Sensor
+## Creating a Custom Sensor
 As noted above, Sensor and Control display is different at the base url than at the root target. We will see how this works by building a simple Sensor class that displays the message "Hello from SimpleSensor". Starting with the class definition in [SimpleSensor.h](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SimpleSensor.h), notice the following:
 
-#### Namespace declaration
+**Namespace declaration**
+
 ```
 using namespace lsc;
 ```
 
-#### Class Declaration
+**Class Declaration**
 SimpleSensor derives from Sensor
 
 ```
@@ -150,7 +156,8 @@ SimpleSensor derives from Sensor
 class SimpleSensor : public Sensor {
 ```
 
-#### Required Constructors
+**Required Constructors**
+
 These constructors are required by [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPDevice.h), we'll see why in the class implementation.
 
 ```
@@ -158,7 +165,8 @@ These constructors are required by [UPnPDevice](https://github.com/dltoth/UPnPDe
       SimpleSensor( const char* displayName, const char* target);
 ```
 
-#### Additional Required Methods
+**Additional Required Methods**
+
 Setup() is required for implementation specific initialization. Here we use it to set the initial message, although that could have been done in any number of other ways. Content() is important, as that's the method that will supply HTML to RootDevice.
 
 ```
@@ -175,7 +183,8 @@ Setup() is required for implementation specific initialization. Here we use it t
 
 ```
 
-#### Runtime Type Identification (RTTI)
+**Runtime Type Identification (RTTI)**
+
 Runtime Type Identification is required by all UPNPDevices and UPnPServices; it's part of the base UPnPObject class definition allowing typesafe casting. 
 
 The following macros are used to define RTTI:
@@ -194,7 +203,8 @@ The following macros are used to define RTTI:
 
 Notice the macro DERIVED_TYPE_CHECK(Sensor) declares SimpleSensor as being a subclass of Sensor. Without explicitly including these macros SimpleSensor would inherit its type from Sensor and be considered a Sensor as far as RTTI.
 
-##### Why RTTI
+**Why RTTI?**
+
 Since each embedded UPnPDevice provides its own functionality, one device may rely on another. For example, a timer controlled relay may require a [SoftwareClock](https://github.com/dltoth/DeviceLib/blob/main/src/SoftwareClock.h), or a humidity controlled fan may require a [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h). Since you are building your device, you now about its onboard embedded devices. 
 
 First note that any UPnPObject can retrieve a pointer to the RootDevice as:
@@ -213,7 +223,8 @@ to retrieve a pointer to a SoftwareClock. If SoftwareClock is an embedded device
 
 **Important:** RootDevice setup() instantiates the device hierarchy, so RootDevice::getDevice() will necessarily return NULL until all UPnPDevices and UPnPServices have been added and setup has been called.
 
-#### Define a Message Buffer
+**Define a Message Buffer**
+
 We use a fixed length character array for the message buffer
 
 ```
@@ -223,7 +234,8 @@ We use a fixed length character array for the message buffer
     char          _msg[BUFF_SIZE];
 ```
 
-#### Copy Construction and Destruction are Not Allowed
+**Copy Construction and Destruction are Not Allowed**
+
 **Important:** UPnPObjects should be declared above the ESP setup() function as global variables and any reference to these objects should be by pointer to these declared objects. Memory is allocated for the life of the application. 
 ```
 /**
@@ -236,7 +248,8 @@ We use a fixed length character array for the message buffer
 
 So now let's move on the the implementation file [SimpleSensor.cpp](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SimpleSensor.cpp) and notice the following:
 
-#### Message Template in PROGMEM
+**Message Template in PROGMEM**
+
 A template for the message HTML is defined in PROGMEM
 
 ```
@@ -254,7 +267,8 @@ using namespace lsc;
 INITIALIZE_STATIC_TYPE(SimpleSensor);
 ```
 
-#### UPnPDevice Construction
+**UPnPDevice Construction**
+
 UPnPDevice and UPnPService construction require a *Device Type* and *Target*. Device Type is a UPnP required construct of the form
 
 ```
@@ -282,7 +296,8 @@ SimpleSensor::SimpleSensor(const char* type, const char* target) : Sensor(type, 
 }
 ```
 
-#### Supply HTML Content to RootDevice
+**Supply HTML Content to RootDevice**
+
 Next we define the content() method, notice it simply fills the input *buffer* with HTML based on the pre-defined PROGMEM template and the message from *getMessage()*.
 
 ```
@@ -294,7 +309,8 @@ void SimpleSensor::content(char buffer[], int bufferSize) {
 }
 ```
 
-#### Define Methods to Set Message and Setup Device
+**Define Methods to Set Message and Setup Device**
+
 Setting the message fills the message buffer
 
 ```
@@ -304,7 +320,9 @@ void SimpleSensor::setMessage(const char* m) {
   }
 }
 ```
-The setup function initializes the message buffer to "Hello from Simple Sensor". Be sure to call *Sensor::setup()* on the base class to assure it is properly setup prior to any subclass setup.
+**Define the setup Method**
+
+The setup method initializes the message buffer to "Hello from Simple Sensor". Be sure to call *Sensor::setup()* on the base class to assure it is properly setup prior to any subclass setup.
 
 ```
 void SimpleSensor::setup(WebContext* svr) {
@@ -315,6 +333,7 @@ void SimpleSensor::setup(WebContext* svr) {
   setMessage("Hello from Simple Sensor");
 }
 ```
+
 The Sketch that instantiates a SimpleSensor and adds it to a RootDevice can be found [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino). We won't go into sketch detail here, but flash your device and point a browser to the device base URL (http://IPAdress:80/). You will see figure 2 below.
 
 *Figure 2 - SimpleSensor display at http://10.0.0.165:80/
@@ -339,10 +358,11 @@ Now, selecting the "Configure" button will bring up default configuration. Defau
 
 ![image5](/assets/image5.png)
 
-### Creating Custom Configuration
+## Creating Custom Configuration
 Now let's look at creating custom configuration for SimpleSensor, see [SensorWithConfig.h](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorWithConfig.h) and notice SensorWithConfig is a subclass of SimpleSensor. In what follows, we will only discuss the important differences.
 
-#### Define Required Methods
+**Define Required Methods**
+
 SimpleSensor has both SetConfiguration and GetConfiguration services. SetConfiguration requires a form handler to display an HTML configuration form, and a *submit* method for that form. Also since we are customizing configuration, we should also reflect that customization in the *getConfiguation* method.
 
 ```
@@ -354,7 +374,8 @@ SimpleSensor has both SetConfiguration and GetConfiguration services. SetConfigu
       void           setConfiguration(WebContext* svr);
 
 ```
-#### Dont Forget RTTI
+
+**Dont Forget RTTI**
 SensorWithConfig is a subclass of Sensor
 
 ```
@@ -364,7 +385,7 @@ SensorWithConfig is a subclass of Sensor
 
 Now let's move on the the implementation file [SensorWithConfig.cpp](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorWithConfig.cpp).
 
-#### Define PROGMEM Templates
+**Define PROGMEM Templates**
 
 Define the template used for GetConfiguration. By convention it has a standard XML style (not enforced). Notice it returns configuration from the base class (display name) and adds the message.
 
