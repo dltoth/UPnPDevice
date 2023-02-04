@@ -13,14 +13,8 @@
 */
 namespace lsc {
 
-/** SimpleControl is a Control for managing a relay, which in turn could control an outlet. SimpleControl has 2 states ON, and OFF controlled by a toggle 
- *  in the HTML interface. Switch ControlState is read from the relay itself rather than managing an internal variable.
- *  Implementers of this class must provide:
- *      virtual void  content(WebContext* svr);    // From Control - displays the device based on SimpleControl state
- *      virtual void  setState(WebContext* svr);   // HttpHandler for retrieving arguments and setting the SimpleControl state
- *  The actual electronics for  ON/OFF are implemented in the method setOutletState(ControlState)
- *  SimpleControl relay uses WeMOS pin D5 (GPIO pin 14), but pin can be set via:
- *      void setPin(int pin);
+/** SimpleControl is a Control for managing a 2 states, ON and OFF, controlled by a toggle 
+ *  in the HTML interface. 
  *  Configuration support is provided by Control allowing  deviceName definition 
  */
 
