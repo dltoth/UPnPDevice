@@ -408,7 +408,7 @@ const char  SensorWithConfig_config_template[]  PROGMEM = "<?xml version=\"1.0\"
 
 ```
 
-The HTML form template includes text input for display name from Sensor, and adds text input for the mesage.
+HTML for the config form template includes text input for display name from Sensor, and adds text input for the mesage.
 
 ```
 /**
