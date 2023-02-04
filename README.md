@@ -21,7 +21,7 @@ The set of classes include:
 
 Both Sensor and Control include default GetConfiguration and SetConfiguration Services.
 
-Default display for RootDevice is to put Sensor HTML inline with it's HTML display, and place a link to the Control in an iFrame. UPnPDevices that are neither Sensor nor Control are displayed as an HTML button, where selection triggers device display. Default UPnPDevice display is to present each of its services as HTML buttons. 
+Default display for RootDevice is to put Sensor HTML inline with its HTML display, and place a link to the Control in an iFrame. UPnPDevices that are neither Sensor nor Control are displayed as an HTML button, where selection triggers device display. Default UPnPDevice display is to present each of its services as HTML buttons. 
 
 In what follows we will detail 4 examples:
  1. UPnPDevice hierarchy
