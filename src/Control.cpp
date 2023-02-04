@@ -51,13 +51,27 @@ void Control::display(WebContext* svr) {
   svr->send(200,"text/html",buffer);
 }
 
+/**
+ *   Provide iFrame content
+ */
+void Control::displayControl(WebContext* svr) {
+  char buffer[1000];
+  int size = sizeof(buffer);
+  int pos = 0;
+  pos = formatBuffer_P(buffer,size,pos,html_header);
+  content(buffer+pos,size-pos);
+  pos = strlen(buffer);
+  pos = formatTail(buffer,size,pos); 
+  svr->send(200,"text/html",buffer);
+}
+
 void Control::setup(WebContext* svr) {
   UPnPDevice::setup(svr);
   char pathBuff[100];
   contentPath(pathBuff,100);
-  svr->on(pathBuff,[this](WebContext* svr){this->content(svr);});
+  svr->on(pathBuff,[this](WebContext* svr){this->displayControl(svr);});
 }
 
-void Control::contentPath(char buffer[], size_t size) {handlerPath(buffer,size,"content.html");}
+void Control::contentPath(char buffer[], size_t size) {handlerPath(buffer,size,"displayControl");}
 
 } // End of namespace lsc

@@ -21,6 +21,10 @@ class Control : public UPnPDevice  {
       Control();
       Control( const char* type, const char* target);
 
+/**
+*   Root based url to the request handler for iFrame content display, registered with the Web server 
+*   at setup()
+*/
       void               contentPath(char buffer[], size_t size);
 
 /** Controls with complex configutation should implement methods for the following
@@ -49,14 +53,13 @@ class Control : public UPnPDevice  {
 
 /** Control is an abstract class, so implementations must include the following:
  *  
- *    content(WebContext*)                     := Supplies only the Control UI sufficient to display in an iFrame wihout decoration. 
- *                                                The base Control class provides implementation for display(), which displays content() 
- *                                                in an iFrame with decoration (title from displayName()).
+ *    content(char buffer[], int buffSize)     := Supplies only the Control HTML into the buffer provided. Base Control class implements 
+ *                                                the request handlers for display, which use this method, so implementation is mandatory.   
  *    frameHeight()                            := Height of iFrame (defaults to 75)
  *    frameWidth()                             := Width of iFrame (defaults to 300);
  *    
  */
-      virtual void       content(WebContext* svr) = 0;
+      virtual void       content(char buffer[], int buffSize) = 0;
       virtual int        frameHeight()      {return 75;}
       virtual int        frameWidth()       {return 300;}
       
@@ -65,6 +68,12 @@ class Control : public UPnPDevice  {
       
       void               display(WebContext* svr);
       void               setup(WebContext* svr);
+
+/**
+ *   Display Control content, intended for the endpoint of an iFrame link and
+ *   when the Control refreshes its display
+ */
+      virtual void       displayControl(WebContext* svr);
 
 /**
  *   Macros to define the following Runtime Type Info:

@@ -112,23 +112,25 @@ class RootDevice : public UPnPDevice {
      RootDevice();
      RootDevice(const char* type, const char* target);
 
-     int            serverPort()                 {return _serverPort;}
-     int            numDevices()                 {return _numDevices;}
-     UPnPDevice**   devices()                    {return _devices;}
-     UPnPDevice*    device(int i)                {return ((i<_numDevices)?(_devices[i]):(NULL));}
-     WebContext*    getContext()                 {return _context;}
+     int               serverPort()                 {return _serverPort;}
+     int               numDevices()                 {return _numDevices;}
+     UPnPDevice**      devices()                    {return _devices;}
+     UPnPDevice*       device(int i)                {return ((i<_numDevices)?(_devices[i]):(NULL));}
+     WebContext*       getContext()                 {return _context;}
      
-     void           rootLocation(char buffer[], int buffSize, IPAddress ifc);
-     void           addDevice(UPnPDevice* dvc);
-     UPnPDevice*    getDevice(const ClassType* t);
-     UPnPDevice*    getDevice(const char* uuid);
-     
-     void           setup(WebContext* svr);
-     void           display(WebContext* svr);
-     void           doDevice();
-     virtual void   location(char buffer[], int buffSize, IPAddress addr);
-     virtual void   displayRoot(WebContext* svr);
-     virtual void   styles(WebContext* svr); 
+     void              rootLocation(char buffer[], int buffSize, IPAddress ifc);
+     void              addDevice(UPnPDevice* dvc);
+     UPnPDevice*       getDevice(const ClassType* t);
+     UPnPDevice*       getDevice(const char* uuid);
+
+    static UPnPDevice* getDevice(RootDevice* root, ClassType* type) {return((root!=NULL)?(root->getDevice(type)):(NULL));}
+
+     void              setup(WebContext* svr);
+     void              display(WebContext* svr);
+     void              doDevice();
+     virtual void      location(char buffer[], int buffSize, IPAddress addr);
+     virtual void      displayRoot(WebContext* svr);
+     virtual void      styles(WebContext* svr); 
   
      template<typename T>
      void addDevices( T ptr) {addDevice(ptr);}
@@ -151,6 +153,10 @@ class RootDevice : public UPnPDevice {
      virtual UPnPService*    asService()    {return NULL;}
      
      protected:
+/**
+ *   Format content for base URL display, where Sensors insert their HTML and Controls 
+ *   are linked with an iFrame, mitigating the need for a large display buffer.
+ */
      virtual void            formatContent(char buffer[], int size);
      
      UPnPDevice*             _devices[MAX_DEVICES];
