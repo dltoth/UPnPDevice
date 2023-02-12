@@ -312,7 +312,6 @@ UPnPDevice* RootDevice::getDevice(const ClassType* t) {
  */
 UPnPDevice* RootDevice::getDevice(const char* u) {
   UPnPDevice* result = NULL;
-  Serial.printf("RootDevice::getDevice: testing %s Root uuid is %s\n",u,this->uuid());
   if(this->isDevice(u)) result = this;
   else {
      for( int i=0; (i<numDevices()) && (result == NULL); i++ ) {if(device(i)->isDevice(u)) {result = device(i);break;}}

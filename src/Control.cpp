@@ -42,7 +42,6 @@ void Control::display(WebContext* svr) {
   pos = formatBuffer_P(buffer,size,pos,iframe_html,pathBuff,frameHeight(),frameWidth());
 
 /** 
- *  Parent of a Control is a RootDevice and thus is non-null and provides a complete path
  *  Add a Config Button to the Control display
  */
   setConfiguration()->formPath(pathBuff,100);

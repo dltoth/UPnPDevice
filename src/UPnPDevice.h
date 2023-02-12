@@ -123,7 +123,7 @@ class RootDevice : public UPnPDevice {
      UPnPDevice*       getDevice(const ClassType* t);
      UPnPDevice*       getDevice(const char* uuid);
 
-    static UPnPDevice* getDevice(RootDevice* root, ClassType* type) {return((root!=NULL)?(root->getDevice(type)):(NULL));}
+    static UPnPDevice* getDevice(RootDevice* root, const ClassType* type) {return((root!=NULL)?(root->getDevice(type)):(NULL));}
 
      void              setup(WebContext* svr);
      void              display(WebContext* svr);
