@@ -43,6 +43,8 @@ using namespace lsc;
 
 **Instantiating Devices and Services**
 
+WebContext is a WebServer abstraction for ESP8266 and ESP32.
+
 ```
 /**
  *   Device hierarchy will consist of a RootDevice (root) with two embedded devices 
@@ -147,6 +149,7 @@ using namespace lsc;
 ```
 
 **Class Declaration**
+
 SimpleSensor derives from Sensor
 
 ```
@@ -376,6 +379,7 @@ SimpleSensor has both SetConfiguration and GetConfiguration services. SetConfigu
 ```
 
 **Dont Forget RTTI**
+
 SensorWithConfig is a subclass of Sensor
 
 ```
