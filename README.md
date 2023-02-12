@@ -526,7 +526,7 @@ void SensorWithConfig::configForm(WebContext* svr) {
 
 We can go back to the same sketch [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino), and instead instantiat a SensorWithConfig. Flash your device and point a browser to the device base URL (http://IPAdress:80/). As before, the Sensor displays is its message, and selecting the "This Device" button will display all of the RootDevice embedded devices as buttons. In this case, a single "Sensor With Config" button. Selecting that button, and then selecting the "Configure" button you will see figure 6 below.
 
-*Figure 6 - SensorWithConfig device at http://10.0.0.165/device/sensor/setConfiguration/configForm*
+*Figure 6 - SensorWithConfig device at http://10.0.0.165/device/sensorwc/setConfiguration/configForm*
 
 ![image6](/assets/image6.png)
 
