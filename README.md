@@ -31,6 +31,8 @@ In what follows we will detail 4 examples:
 
 ## Default Device Hierarchy and Display
 
+All devices are displayed with a set of HTML entities and styles defined in [CommonUtil](https://github.com/dltoth/CommonUtil). A number of these examples also use HTML formatting functions found there as well. In particular, [formatHeader](https://github.com/dltoth/CommonUtil/blob/main/src/CommonProgmem.h) will format an HTML header for a web page that includes a reference to the CSS stylesheet "/styles.css", where RootDevice will register the HTML request handler on setup.
+
 See the sketch [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/UPnPDevice.ino) for a simple example of creating a device hierarchy. Note the following parts:
 
 **Namespace Declaration**
@@ -429,3 +431,103 @@ const char  SensorWithConfig_config_form[] PROGMEM = "<br><br><form action=\"%s\
               "<button class=\"fmButton\" type=\"button\" onclick=\"window.location.href=\'%s\';\">Cancel</button>"
             "</div></form>";
 ```
+
+**Define Namespace and static RTTI**
+
+```
+using namespace lsc;
+
+INITIALIZE_STATIC_TYPE(SensorWithConfig);
+```
+
+**Define Constructors**
+
+HTTP request handlers are set on the Sensor GetConfiguration and SetConfiguration UPnPServices directly. A pointer 
+to each service is provided by Sensor::setConfiguration() and Sensor::getConfiguration() respectively. The form
+handler will present a configuration form, where form submission triggers setConfiguration().
+```
+/**
+ *   Type is the UPnP required device type, defined as urn:CompanyName:device:deviceName:version where CompanyName 
+ *   substitutes "." with "_". Target is the Http target for device display, which MUST be unique under the RootDevice. 
+ *   In this case:
+ *      http://ip-address:port/rootTarget/sensorwc 
+ *   where rootTarget is set on the RootDevice.
+ *   Configuration is managed via http handler and form handler set on the Get/SetConfiguration services, included with Sensor.
+ */
+SensorWithConfig::SensorWithConfig() : SimpleSensor("urn:LeelanauSoftwareCo-com:device:SensorWithConfig:1","sensorwc") {
+  setDisplayName("Sensor With Config");
+  Sensor::setConfiguration()->setHttpHandler([this](WebContext* svr){this->setConfiguration(svr);});
+  Sensor::setConfiguration()->setFormHandler([this](WebContext* svr){this->configForm(svr);});
+  Sensor::getConfiguration()->setHttpHandler([this](WebContext* svr){this->getConfiguration(svr);});
+}
+```
+
+***Define HTTP Request Handlers***
+
+The HTTP request handler for setting configuration expects only two possible arguments, either
+DISPLAYNAME or MSG. 
+```
+/**
+ *  Configuration has 2 possible arguments:
+ *     DISPLAYNAME   :=  Device display name, part of the default Sensor configuration
+ *     MSG           :=  Sensor message to display
+ *  These are set on the config form.
+ */
+void SensorWithConfig::setConfiguration(WebContext* svr) {
+  int numArgs = svr->argCount();
+  for( int i=0; i<numArgs; i++) {
+     const String& argName = svr->argName(i);
+     const String& arg = svr->arg(i);
+     if( argName.equalsIgnoreCase("MSG") ) setMessage(arg.c_str());
+     else if( argName.equalsIgnoreCase("DISPLAYNAME") ) {if( arg.length() > 0 ) setDisplayName(arg.c_str());}
+  }
+  display(svr);
+}
+```
+
+The HTTP request handler for getConfiguration fills a buffer with the XML template and sends
+a response.
+
+```
+void SensorWithConfig::getConfiguration(WebContext* svr) {
+  char buffer[1000];
+  int size = sizeof(buffer);
+  snprintf_P(buffer,size,SensorWithConfig_config_template,getDisplayName(),getMessage());
+  svr->send(200, "text/xml", buffer);    
+}
+```
+
+Lastly, the form handler uses HTML formatting functions found in [CommonUtil](https://github.com/dltoth/CommonUtil). The *formatHeader* 
+function supplies the HTML document header and style link, and *formatBuffer_P* is designed to take a **PROGMEM** template and fill
+an input buffer.
+
+**Note: The url for form submission is provided by setConfigutation::getPath.
+
+```
+void SensorWithConfig::configForm(WebContext* svr) {
+/**
+ *    Config Form HTML Start with Title
+ */
+  char buffer[1500];
+  int size = sizeof(buffer);
+  int pos = formatHeader(buffer,size,"Set Sensor Configuration");
+
+  char svcPath[100];
+  Sensor::setConfiguration()->getPath(svcPath,100);     // Form submit path (service path)
+  pos = formatBuffer_P(buffer,size,pos,SensorWithConfig_config_form,svcPath,getDisplayName(),getMessage());
+
+/**
+ *  Config Form HTML Tail
+ */
+  formatTail(buffer,size,pos);
+  svr->send(200,"text/html",buffer); 
+}
+```
+
+We can go back to the same sketch [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino), and instead instantiat a SensorWithConfig. Flash your device and point a browser to the device base URL (http://IPAdress:80/). As before, the Sensor displays is its message, and selecting the "This Device" button will display all of the RootDevice embedded devices as buttons. In this case, a single "Sensor With Config" button. Selecting that button, and then selecting the "Configure" button you will see figure 6 below.
+
+*Figure 6 - SensorWithConfig device at http://10.0.0.165/device/sensor/setConfiguration/configForm*
+
+![image6](/assets/image6.png)
+
+
