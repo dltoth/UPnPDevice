@@ -10,20 +10,18 @@ The set of classes include:
                       UPnPServices
   UPnPService      := A base class for UPnP services. Services have a callable HTTP 
                       interface
-  Sensor           := A UPnPDevice that has simple output based display, like a Thermometer 
-                      or Clock
-  Control          := A UPnPDevice with more complex display, including user interaction, 
-                      like a toggle
+  Sensor           := A virtual base UPnPDevice that has simple output based display, like 
+                      a Thermometer or Clock
+  Control          := A virtual base UPnPDevice with more complex display, including user 
+                      interaction, like a toggle
   GetConfiguration := A UPnPService base class for returning device configuration in XML
   SetConfiguration := A UPnPService base class for setting device configuration from callable 
                       HTTP interface
 ```
 
-Both Sensor and Control include default GetConfiguration and SetConfiguration Services.
+Both Sensor and Control include default GetConfiguration and SetConfiguration Services, as does RootDevice.
 
-Default display for RootDevice is to put Sensor HTML inline with its HTML display, and place a url for Control display in an iFrame. UPnPDevices that are neither Sensor nor Control are displayed as an HTML button, where selection triggers device display. Default UPnPDevice display is to present each of its services as HTML buttons. 
-
-In what follows, a conceptual framework for the library presented and 4 examples will be detailed:
+In what follows a conceptual framework for the library is presented, and 4 examples will be detailed:
  1. UPnPDevice hierarchy
  2. Creating a simple Sensor that displays a message
  3. Adding configuration to that Sensor
@@ -33,7 +31,7 @@ In what follows, a conceptual framework for the library presented and 4 examples
 
 UPnP Defines three basic constructs: root devices, embedded devices, and services, where both root devices and embedded devices can have services and embedded devices, but services may not have embedded devices. Essentially, a root device is a container for a device heirarchy consisting of embedded devices and services. UPnP does not limit the depth or breadth of a device heirarchy. Root devices publish their functionality over HTTP and discovery (SSDP) over UDP. 
 
-In this library, only root devices (RootDevice) can have embedded devices (UPnPDevice), and the number of embedded devices is limited to 8. Root devices and embedded devices have services (UPnPService), and the number of services is also limited to 8. In terms of class heirarchy, RootDevice is a subclass of UPnPDevice, which in turn is a subclass of UPnPObject, and UPnPService is a subclass of UPnPObject.
+In this library, only root devices ([RootDevice](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPDevice.cpp)) can have embedded devices ([UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPDevice.cpp)), and the number of embedded devices is limited to 8. Root devices and embedded devices have services ([UPnPService](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPService.h)), and the number of services is also limited to 8. In terms of class heirarchy, RootDevice is a subclass of UPnPDevice, which in turn is a subclass of [UPnPObject](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPService.h), and UPnPService is a subclass of UPnPObject.
 
 ### Runtime Type Identification (RTTI) and UPnP Device Type
 
@@ -45,7 +43,7 @@ or
    urn:CompanyName:service:serviceName:version
 ```
 
-Where CompanyName substitutes "." with "-". For example "urn:LeelanauSoftware-com:device:Thermometer:1" is the device type for [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h). 
+Where CompanyName is the company domain name with "-" substituting ".". For example "urn:LeelanauSoftware-com:device:Thermometer:1" is the device type for [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h) offered by LeelanauSoftware.com. UPnP restricts the device (service) type to 64 characters.
 
 The following macros are used to define RTTI and UPnP Device type in the header file of a UPnPDevice subclass:
 
@@ -67,14 +65,14 @@ defining the following methods for the class:
       public:  virtual boolean         isType(const char* t)       
 ```
 
-Notice the macro DERIVED_TYPE_CHECK(*baseName*) declares *baseName* as being a subclass of the class being defined. Additionally, the static members _classType and _upnpType must be initialized in the .cpp file with macros:
+Notice the macro DERIVED_TYPE_CHECK(*baseName*) declares *baseName* as being a subclass of the class being defined. Additionally, the static members *_classType* and *_upnpType* must be initialized in the .cpp file with macros:
 
 ```
       INITIALIZE_STATIC_TYPE(className);
-      INITIALIZE_UPnP_TYPE(className,urn:domain-name:device:deviceName:1);
+      INITIALIZE_UPnP_TYPE(className,urn:company-name:device:deviceName:1);
 ```
 
-where *className* is the class name of the UPnPDevice being defined, *domainName* is the domain name the UPnPDevice, and *deviceName* is the unique device name.
+where *className* is the class name of the UPnPDevice being defined, *company-name* is the company name described earlier, and *deviceName* is the unique device name.
 
 **Why RTTI?**
 
@@ -95,6 +93,66 @@ So, if a RootDevice is expected to include a [SoftwareClock](https://github.com/
 can be used to retrieve a pointer to a SoftwareClock. If SoftwareClock is an embedded device and setup() has been called on the RootDevice, clock will be non-NULL. 
 
 **Important:** RootDevice setup() instantiates the device hierarchy, so RootDevice::getDevice() will necessarily return NULL until all UPnPDevices and UPnPServices have been added and setup has been called.
+
+### Custom UPnPDevice and UPnPService
+
+The most simple custom device or service consists of constructors and RTTI definition and initialization. The header file CustomDevice.h should consist of:
+
+```
+/**
+ *
+ */
+ 
+#ifndef CUSTOMDEVICE_H
+#define CUSTOMDEVICE_H
+
+#include <UPnPDevice.h>
+
+/** Leelanau Software Company namespace 
+*  
+*/
+namespace lsc {
+  
+class CustomDevice : public UPnPDevice {
+  public:
+    CustomDevice() :  UPnPDevice("deviceTarget") {setDisplayName("Custom Device");};
+    CustomDevice(const char* target) : UPnPDevice(target) {setDisplayName("Custom Device");};
+
+    DEFINE_RTTI;
+    DERIVED_TYPE_CHECK(UPnPDevice);
+};
+
+class CustomService : public UPnPService {
+  public:
+    CustomService() :  UPnPService("serviceTarget") {setDisplayName("Custom Service");};
+    CustomService(const char* target) : UPnPService(target) {setDisplayName("Custom Service");};
+
+    DEFINE_RTTI;
+    DERIVED_TYPE_CHECK(UPnPService);
+};
+}
+#endif
+```
+
+The implementation .cpp file should contain:
+
+```
+/**
+ * 
+ */
+
+#include "CustomDevice.h"
+
+namespace lsc {
+INITIALIZE_STATIC_TYPE(CustomDevice);
+INITIALIZE_UPnP_TYPE(CustomDevice,urn:CompanyName-com:device:CustomDevice:1);
+INITIALIZE_STATIC_TYPE(CustomService);
+INITIALIZE_UPnP_TYPE(CustomService,urn:CompanyName-com:service:CustomService:1);
+}
+
+```
+
+The implemention of CustomDevice will provide basic device display, RTTI, and device (service) type information.
 
 ## Default Device Hierarchy and Display
 
