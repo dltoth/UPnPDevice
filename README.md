@@ -23,11 +23,78 @@ Both Sensor and Control include default GetConfiguration and SetConfiguration Se
 
 Default display for RootDevice is to put Sensor HTML inline with its HTML display, and place a url for Control display in an iFrame. UPnPDevices that are neither Sensor nor Control are displayed as an HTML button, where selection triggers device display. Default UPnPDevice display is to present each of its services as HTML buttons. 
 
-In what follows we will detail 4 examples:
+In what follows, a conceptual framework for the library presented and 4 examples will be detailed:
  1. UPnPDevice hierarchy
  2. Creating a simple Sensor that displays a message
  3. Adding configuration to that Sensor
  4. Creating a simple control implementing a toggle.
+
+## Conceptual Framework
+
+UPnP Defines three basic constructs: root devices, embedded devices, and services, where both root devices and embedded devices can have services and embedded devices, but services may not have embedded devices. Essentially, a root device is a container for a device heirarchy consisting of embedded devices and services. UPnP does not limit the depth or breadth of a device heirarchy. Root devices publish their functionality over HTTP and discovery (SSDP) over UDP. 
+
+In this library, only root devices (RootDevice) can have embedded devices (UPnPDevice), and the number of embedded devices is limited to 8. Root devices and embedded devices have services (UPnPService), and the number of services is also limited to 8. In terms of class heirarchy, RootDevice is a subclass of UPnPDevice, which in turn is a subclass of UPnPObject, and UPnPService is a subclass of UPnPObject.
+
+### Runtime Type Identification (RTTI) and UPnP Device Type
+
+UPnPObjects include the notion of class type for runtime type identification (RTTI). RTTI provides typesafe casting and is required by all UPNPDevices and UPnPServices. Additionally, UPnPDevices and UPnPServices have a UPnP device type (or service type). Device Type is a UPnP required construct of the form
+
+```
+   urn:CompanyName:device:deviceName:version
+or
+   urn:CompanyName:service:serviceName:version
+```
+
+Where CompanyName substitutes "." with "-". For example "urn:LeelanauSoftware-com:device:Thermometer:1" is the device type for [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h). 
+
+The following macros are used to define RTTI and UPnP Device type in the header file of a UPnPDevice subclass:
+
+```
+      DEFINE_RTTI;
+      DERIVED_TYPE_CHECK(baseName);
+```
+
+defining the following methods for the class:
+
+```
+      private: static const ClassType  _classType;             
+      public:  static const ClassType* classType();   
+      public:  virtual void*           as(const ClassType* t);
+      public:  virtual boolean         isClassType( const ClassType* t);
+      private: static const char*      _upnpType;                                      
+      public:  static const char*      upnpType()                  
+      public:  virtual const char*     getType()                   
+      public:  virtual boolean         isType(const char* t)       
+```
+
+Notice the macro DERIVED_TYPE_CHECK(*baseName*) declares *baseName* as being a subclass of the class being defined. Additionally, the static members _classType and _upnpType must be initialized in the .cpp file with macros:
+
+```
+      INITIALIZE_STATIC_TYPE(className);
+      INITIALIZE_UPnP_TYPE(className,urn:domain-name:device:deviceName:1);
+```
+
+where *className* is the class name of the UPnPDevice being defined, *domainName* is the domain name the UPnPDevice, and *deviceName* is the unique device name.
+
+**Why RTTI?**
+
+Since each embedded UPnPDevice provides its own functionality, one device may rely on another. For example, a timer controlled relay may require a [SoftwareClock](https://github.com/dltoth/DeviceLib/blob/main/src/SoftwareClock.h), or a humidity controlled fan may require a [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h). A device implementer, being familiar with onboard embedded devices, will know if a device or service is available. 
+
+First note that any UPnPObject can retrieve a pointer to the RootDevice as:
+
+```
+   RootDevice* root = rootDevice();
+```
+
+So, if a RootDevice is expected to include a [SoftwareClock](https://github.com/dltoth/DeviceLib/blob/main/src/SoftwareClock.h), then the static RootDevice method
+
+```
+   SoftwareClock* clock = (SoftwareClock*)RootDevice::getDevice(rootDevice(), SoftwareClock::classType());
+```
+
+can be used to retrieve a pointer to a SoftwareClock. If SoftwareClock is an embedded device and setup() has been called on the RootDevice, clock will be non-NULL. 
+
+**Important:** RootDevice setup() instantiates the device hierarchy, so RootDevice::getDevice() will necessarily return NULL until all UPnPDevices and UPnPServices have been added and setup has been called.
 
 ## Default Device Hierarchy and Display
 
