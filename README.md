@@ -52,7 +52,7 @@ The following macros are used to define RTTI and UPnP Device type in the header 
       DERIVED_TYPE_CHECK(baseName);
 ```
 
-defining the following methods for the class:
+defining the following members and methods for the class:
 
 ```
       private: static const ClassType  _classType;             
