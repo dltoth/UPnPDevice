@@ -43,7 +43,7 @@ or
    urn:CompanyName:service:serviceName:version
 ```
 
-Where CompanyName is the company domain name with "-" substituting ".". For example "urn:LeelanauSoftware-com:device:Thermometer:1" is the device type for [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h) offered by LeelanauSoftware.com. UPnP restricts the device (service) type to 64 characters.
+Where CompanyName is the company domain name with "-" substituting ".". For example "urn:LeelanauSoftware-com:device:Thermometer:1" is the device type for [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h) offered by LeelanauSoftware.com. Device and Service type are used for SSDP service discovery, to find specific device types on the local network. UPnP restricts the device (service) type to 64 characters.
 
 The following macros are used to define RTTI and UPnP Device type in the header file of a UPnPDevice subclass:
 
@@ -64,8 +64,10 @@ defining the following members and methods for the class:
       public:  virtual const char*     getType()                   
       public:  virtual boolean         isType(const char* t)       
 ```
-
-Notice the macro DERIVED_TYPE_CHECK(*baseName*) declares *baseName* as being a subclass of the class being defined. Additionally, the static members *_classType* and *_upnpType* must be initialized in the .cpp file with macros:
+**Notes:** 
+1. The static form upnpType() is used for device search, and tied to the class, as in Thermometer::upnpType(). The virtual form getType() will provide the device type regardless of how a pointer to the device is cast. 
+2. The macro DERIVED_TYPE_CHECK(*baseName*) declares *baseName* as being a subclass of the class being defined. 
+3. The static members *_classType* and *_upnpType* must be initialized in the .cpp file with macros:
 
 ```
       INITIALIZE_STATIC_TYPE(className);
@@ -94,9 +96,24 @@ can be used to retrieve a pointer to a SoftwareClock. If SoftwareClock is an emb
 
 **Important:** RootDevice setup() instantiates the device hierarchy, so RootDevice::getDevice() will necessarily return NULL until all UPnPDevices and UPnPServices have been added and setup has been called.
 
+### Device Instantiation
+
+All of the UPnPdevice classes are expected to be constructed and managed in global scope above the setup() function in an Arduino sketch. Copy construction and and Object destruction are not allower, objects are expected to live over the life of an executing application. UPnPObjects are passed via pointer. The following macro is used to enforce this behavior:
+
+```
+   DEFINE_EXCLUSIONS(className);
+```
+
+which adds the following lines of code to a header file:
+
+```
+      className(const className&)= delete;
+      className& operator=(const className&)= delete;
+```
+
 ### Custom UPnPDevice and UPnPService
 
-The most simple custom device or service consists of constructors and RTTI definition and initialization. The header file CustomDevice.h should consist of:
+The most basic custom device or service consists of constructors and RTTI definition and initialization. The header file CustomDevice.h should consist of:
 
 ```
 /**
@@ -111,7 +128,7 @@ The most simple custom device or service consists of constructors and RTTI defin
 /** Leelanau Software Company namespace 
 *  
 */
-namespace lsc {
+using namespace lsc;
   
 class CustomDevice : public UPnPDevice {
   public:
@@ -120,17 +137,9 @@ class CustomDevice : public UPnPDevice {
 
     DEFINE_RTTI;
     DERIVED_TYPE_CHECK(UPnPDevice);
+    DEFINE_EXCLUSIONS(CustomDevice);
 };
 
-class CustomService : public UPnPService {
-  public:
-    CustomService() :  UPnPService("serviceTarget") {setDisplayName("Custom Service");};
-    CustomService(const char* target) : UPnPService(target) {setDisplayName("Custom Service");};
-
-    DEFINE_RTTI;
-    DERIVED_TYPE_CHECK(UPnPService);
-};
-}
 #endif
 ```
 
@@ -143,16 +152,11 @@ The implementation .cpp file should contain:
 
 #include "CustomDevice.h"
 
-namespace lsc {
 INITIALIZE_STATIC_TYPE(CustomDevice);
 INITIALIZE_UPnP_TYPE(CustomDevice,urn:CompanyName-com:device:CustomDevice:1);
-INITIALIZE_STATIC_TYPE(CustomService);
-INITIALIZE_UPnP_TYPE(CustomService,urn:CompanyName-com:service:CustomService:1);
-}
-
 ```
 
-The implemention of CustomDevice will provide basic device display, RTTI, and device (service) type information.
+The implemention of CustomDevice will provide basic device display, RTTI, and device type information.
 
 ## Default Device Hierarchy and Display
 
