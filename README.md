@@ -98,7 +98,7 @@ can be used to retrieve a pointer to a SoftwareClock. If SoftwareClock is an emb
 
 ### Device Instantiation
 
-All of the UPnPdevice classes are expected to be constructed and managed in global scope above the setup() function in an Arduino sketch. Copy construction and and Object destruction are not allower, objects are expected to live over the life of an executing application. UPnPObjects are passed via pointer. The following macro is used to enforce this behavior:
+All of the UPnPDevice classes are expected to be constructed and managed in global scope above the setup() function in an Arduino sketch. Copy construction and and Object destruction are not allowed, objects are expected to live over the life of an executing application. UPnPObjects are passed via pointer. The following macro is used to enforce this behavior:
 
 ```
    DEFINE_EXCLUSIONS(className);
@@ -111,9 +111,9 @@ which adds the following lines of code to a header file:
       className& operator=(const className&)= delete;
 ```
 
-### Custom UPnPDevice and UPnPService
+### Custom UPnPDevice
 
-The most basic custom device or service consists of constructors and RTTI definition and initialization. The header file CustomDevice.h should consist of:
+The most basic custom device or service consists of constructors, RTTI definition, and initialization. The header file CustomDevice.h should consist of:
 
 ```
 /**
