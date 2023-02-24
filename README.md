@@ -31,7 +31,7 @@ In what follows a conceptual framework for the library is presented, and 4 examp
 
 UPnP Defines three basic constructs: root devices, embedded devices, and services, where both root devices and embedded devices can have services and embedded devices, but services may not have embedded devices. Essentially, a root device is a container for a device heirarchy consisting of embedded devices and services. UPnP does not limit the depth or breadth of a device heirarchy. Root devices publish their functionality over HTTP and discovery (SSDP) over UDP. 
 
-In this library, only root devices ([RootDevice](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPDevice.h)) can have embedded devices ([UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPDevice.h)), and the number of embedded devices is limited to 8. Root devices and embedded devices have services ([UPnPService](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPService.h)), and the number of services is also limited to 8. In terms of class heirarchy, RootDevice is a subclass of UPnPDevice, which in turn is a subclass of [UPnPObject](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPService.h), and UPnPService is a subclass of UPnPObject.
+In this library, only root devices ([RootDevice](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPDevice.h)) can have embedded devices ([UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPDevice.h)), and the number of embedded devices is limited to 8. Both RootDevices and embedded devices can have services ([UPnPService](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPService.h)), and the number of services is also limited to 8. In terms of class heirarchy, RootDevice is a subclass of UPnPDevice, which in turn is a subclass of [UPnPObject](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPService.h), and UPnPService is a subclass of UPnPObject.
 
 ### Runtime Type Identification (RTTI) and UPnP Device Type
 
@@ -162,7 +162,7 @@ The implemention of CustomDevice will provide basic device display, RTTI, and de
 
 All devices are displayed with a set of HTML entities and styles defined in [CommonUtil](https://github.com/dltoth/CommonUtil). A number of the examples presented here also use HTML formatting functions found there as well. In particular, [formatHeader](https://github.com/dltoth/CommonUtil/blob/main/src/CommonProgmem.h) will format an HTML header for a web page that includes a reference to the CSS stylesheet **/styles.css**; RootDevice will register the HTML request handler for **/styles.css** on setup.
 
-See the sketch folder [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/) for an example of creating a device hierarchy. Notice header and implementation files for [CustomDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/CustomDevice.h) have been added, and CustomService has been added to as well. Looking at the [sketch](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/UPnPDevice.ino), notice the following:
+See the sketch folder [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/) for an example of creating a device hierarchy. Notice header and implementation files for [CustomDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/CustomDevice.h) have been added, and CustomService has been added as well. Looking at the [sketch](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/UPnPDevice.ino), notice the following:
 
 **Namespace Declaration**
 
@@ -264,7 +264,7 @@ Base Device:
          Location is http://10.0.0.78:80/root/baseDevice/baseService
 CustomDevice virtual UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and static upnpType is urn:CompanyName-com:device:CustomDevice:1
 Proper down cast from CustomDevice* (&c) to UPnPObject* (obj)
-obj virtual UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (static) upnpType is urn:LeelanauSoftware-com:object:Basic:1
+obj virtual UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (static) upnpType is urn:LeelanauSoftware-com:device:Object:1
 Proper up cast from UPnPObject* (obj) to UPnPDevice* (dev)
 dev (virtual) UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (static) upnpType is urn:LeelanauSoftware-com:device:Basic:1
 Proper up cast from UPnPDevice* (dev) to CustomDevice* (cusDev) 
@@ -274,7 +274,7 @@ cusDev (virtual) UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (sta
 **Note:** When CustomDevice* is cast as a UPnPObject*, note the difference in UPnPDevice type between the virtual function obj->getType() and the static obj->upnpType(). The static version returns the UPnPDevice type of the pointer class rather than CustomDevice.
 
 ```
-   obj virtual UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (static) upnpType is urn:LeelanauSoftware-com:object:Basic:1
+   obj virtual UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (static) upnpType is urn:LeelanauSoftware-com:device:Object:1
 ```
 
 In this example, the RootDevice is displayed at http://10.0.0.165:80/root, and the display will consist of a list of buttons, one for each of *Custom Device* and *Base Device* (see figure 1 below). Note that the RootDevice display is slightly different at the base http://10.0.0.165:80/. In this view, Sensors and Controls are displayed inline and other UPnPDevices are displayed as buttons (see the discussion on Sensors below).
