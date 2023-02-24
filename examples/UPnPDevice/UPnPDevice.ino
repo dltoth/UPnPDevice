@@ -75,10 +75,20 @@ void setup() {
   c.addService(&cs);
   d.addService(&s);
   root.addDevices(&c,&d);
-  root.setup(&ctx);
   
+/**
+ *  Set up the device hierarchy and register HTTP request handlers
+ */
+  root.setup(&ctx);
+
+/**
+ *  Send UPnP device info to Serial
+ */
   RootDevice::printInfo(&root);  
 
+/**
+ *  Demonstrate RTTI down-cast and up-cast, and virtual vs. static UPnP type info for CustomDevice
+ */
   UPnPObject* obj = (UPnPObject*) c.as(UPnPObject::classType());
   Serial.printf("CustomDevice virtual UPnP Type is %s and static upnpType is %s\n",c.getType(),c.upnpType());
   if( obj != NULL ) {
