@@ -52,7 +52,7 @@ The following macros are used to define RTTI and UPnP Device type in the header 
       DERIVED_TYPE_CHECK(baseName);
 ```
 
-defining the following members and methods for the class:
+which adds the following lines of code in the header file for the class:
 
 ```
       private: static const ClassType  _classType;             
@@ -160,7 +160,7 @@ The implemention of CustomDevice will provide basic device display, RTTI, and de
 
 ## Default Device Hierarchy and Display
 
-All devices are displayed with a set of HTML entities and styles defined in [CommonUtil](https://github.com/dltoth/CommonUtil). A number of these examples also use HTML formatting functions found there as well. In particular, [formatHeader](https://github.com/dltoth/CommonUtil/blob/main/src/CommonProgmem.h) will format an HTML header for a web page that includes a reference to the CSS stylesheet **/styles.css**; RootDevice will register the HTML request handler for **/styles.css** on setup.
+All devices are displayed with a set of HTML entities and styles defined in [CommonUtil](https://github.com/dltoth/CommonUtil). A number of the examp;es presented here also use HTML formatting functions found there as well. In particular, [formatHeader](https://github.com/dltoth/CommonUtil/blob/main/src/CommonProgmem.h) will format an HTML header for a web page that includes a reference to the CSS stylesheet **/styles.css**; RootDevice will register the HTML request handler for **/styles.css** on setup.
 
 See the sketch [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/UPnPDevice.ino) for a simple example of creating a device hierarchy. Note the following parts:
 
