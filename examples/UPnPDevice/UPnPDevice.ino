@@ -24,6 +24,10 @@ WebServer*       svr = &server;
 
 WebContext       ctx;
 
+/**
+ *   Device hierarchy will consist of a RootDevice (root) with two embedded devices 
+ *   (c and d), and two services (cs and s). 
+ */ 
 RootDevice    root;
 CustomDevice  c;
 UPnPDevice    d;
@@ -49,18 +53,27 @@ void setup() {
   ctx.setup(svr,WiFi.localIP(),SERVER_PORT);
   Serial.printf("Web Server started on %s:%d/\n",ctx.getLocalIPAddress().toString().c_str(),ctx.getLocalPort());
   
+/**
+ *  Build devices and set names and targets. Note that device and service targets
+ *  must be unique relative to the RootDevice (or UPnPDevice) as these are used
+ *  to set HTTP request handlers on the web server
+ */ 
+  root.setDisplayName("Root Device");
+  root.setTarget("root");  
+  d.setDisplayName("Base Device");
+  d.setTarget("baseDevice");
+  c.setDisplayName("Custom Device");
+  c.setTarget("customDevice");
+
+/**
+ *  Build the services and set the heirarchy
+ */
   cs.setDisplayName("Custom Service");
   cs.setTarget("customService");
   s.setTarget("baseService");
   s.setDisplayName("Base Service");
   c.addService(&cs);
-  c.setDisplayName("Custom Device");
-  c.setTarget("customDevice");
   d.addService(&s);
-  d.setDisplayName("Base Device");
-  d.setTarget("baseDevice");
-  root.setDisplayName("Root Device");
-  root.setTarget("root");  
   root.addDevices(&c,&d);
   root.setup(&ctx);
   
