@@ -160,9 +160,9 @@ The implemention of CustomDevice will provide basic device display, RTTI, and de
 
 ## Default Device Hierarchy and Display
 
-All devices are displayed with a set of HTML entities and styles defined in [CommonUtil](https://github.com/dltoth/CommonUtil). A number of the examp;es presented here also use HTML formatting functions found there as well. In particular, [formatHeader](https://github.com/dltoth/CommonUtil/blob/main/src/CommonProgmem.h) will format an HTML header for a web page that includes a reference to the CSS stylesheet **/styles.css**; RootDevice will register the HTML request handler for **/styles.css** on setup.
+All devices are displayed with a set of HTML entities and styles defined in [CommonUtil](https://github.com/dltoth/CommonUtil). A number of the examples presented here also use HTML formatting functions found there as well. In particular, [formatHeader](https://github.com/dltoth/CommonUtil/blob/main/src/CommonProgmem.h) will format an HTML header for a web page that includes a reference to the CSS stylesheet **/styles.css**; RootDevice will register the HTML request handler for **/styles.css** on setup.
 
-See the sketch [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/UPnPDevice.ino) for a simple example of creating a device hierarchy. Note the following parts:
+See the sketch folder [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/) for an example of creating a device hierarchy. Notice header and implementation files for [CustomDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/CustomDevice.h) have been added, and CustomService has been added to as well. Looking at the [sketch](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/UPnPDevice.ino), notice the following:
 
 **Namespace Declaration**
 
@@ -179,15 +179,17 @@ WebContext is a WebServer abstraction for ESP8266 and ESP32.
 ```
 /**
  *   Device hierarchy will consist of a RootDevice (root) with two embedded devices 
- *   (d1 and d2), and two services (s1 and s2) attached to d1. 
+ *   (c and d), and two services (cs and s). 
  */
-WebContext       ctx;
-RootDevice       root;
-UPnPDevice       d1;
-UPnPDevice       d2;
-UPnPService      s1;
-UPnPService      s2;
+WebContext    ctx;
+RootDevice    root;
+CustomDevice  c;
+UPnPDevice    d;
+CustomService cs;
+UPnPService   s;
 ```
+
+A base UPnPDevice *d* and CustomDevice *c* will be added to the RoodDevice *root*, and base UPnPService *s* will be added to *d*, with CustomService *cs* added to c.
 
 **Building Devices and Setting Hierarchy**
 
@@ -197,23 +199,27 @@ UPnPService      s2;
  *  must be unique relative to the RootDevice (or UPnPDevice) as these are used
  *  to set HTTP request handlers on the web server
  */ 
-  d1.setDisplayName("Device 1");
-  d1.setTarget("device1");
-  d2.setDisplayName("Device 2");
-  d2.setTarget("device2");
+  root.setDisplayName("Root Device");
+  root.setTarget("root");  
+  d.setDisplayName("Base Device");
+  d.setTarget("baseDevice");
+  c.setDisplayName("Custom Device");
+  c.setTarget("customDevice");
 
 /**
  *  Build the services and set the heirarchy
  */
-  s1.setDisplayName("Service 1");
-  s1.setTarget("service1");
-  s2.setDisplayName("Service 2");
-  s2.setTarget("service2");
-  d1.addServices(&s1,&s2);
-  root.setDisplayName("Root Device");
-  root.setTarget("root");  
-  root.addDevices(&d1,&d2);
+  cs.setDisplayName("Custom Service");
+  cs.setTarget("customService");
+  s.setTarget("baseService");
+  s.setDisplayName("Base Service");
+  c.addService(&cs);
+  d.addService(&s);
+  root.addDevices(&c,&d);
+  root.setup(&ctx);
 ```
+
+**Note:** Display name is used in HTML display and target is used in url creation. HTML request handlers are set on target urls, so targets must be unique relative to RootDevice and UPnPDevices.
 
 **Registerring HTTP Request Handlers**
 
@@ -222,54 +228,61 @@ UPnPService      s2;
  *  Set up the device hierarchy and register HTTP request handlers
  */
   root.setup(&ctx);
-  
-/**
- *  Print UPnPDevice info to Serial
- */
-  UPnPDevice::printInfo(&root);  
-
-}
-
 ```
+
+The RootDevice setup() function runs through each embedded device calling setup() for that device.
+
 **Note:** The RootDevice registers HTTP request handlers for both the base URL (http://IPAddress:port/) and root target URL (http://IPAddress:port/root/), so each RootDevice requires its own WebServer with unique port. It is customary however, to have only a single RootDevice per ESP device. This shouldn't present a problem since the RootDevice functions mainly as a container for embedded UPnPDevices, which in turn provide functionality.
 
 In the example above, output to Serial will be
 
 ```
-
 Starting UPnPDevice Test for Board ESP8266
 Connecting to Access Point My_SSID
 ...........WiFi Connected to My_SSID with IP address: 10.0.0.165
-Web Server started on 10.0.0.165:80/
 RootDevice Root Device:
-   UUID: b2234c12-417f-4e3c-b5d6-4d418143e85d
-   Type: urn:LeelanauSoftwareCo-com:device:RootDevice:1
-   Location is http://10.0.0.165:80/root
+   UUID: 032bd3df-6fc1-47c1-8835-b40d3e968ad5
+   Type: urn:LeelanauSoftware-com:device:RootDevice:1
+   Location is http://10.0.0.78:80/root
    Root Device has no Services
 Root Device Devices:
-Device 1:
-   UUID: 1fda2c59-0a8e-4355-bebd-68e3af78cbeb
-   Type: urn:LeelanauSoftwareCo-com:device:Basic:1
-   Location is http://10.0.0.165:80/root/device1
-   Device 1 Services:
-      Service 1:
-         Type: urn:LeelanauSoftwareCo-com:service:Basic:1
-         Location is http://10.0.0.165:80/root/device1/service1
-      Service 2:
-         Type: urn:LeelanauSoftwareCo-com:service:Basic:1
-         Location is http://10.0.0.165:80/root/device1/service2
-Device 2:
-   UUID: 95a1f160-b833-4785-9271-3262de3f49a1
-   Type: urn:LeelanauSoftwareCo-com:device:Basic:1
-   Location is http://10.0.0.165:80/root/device2
-   Device 2 has no Services
+Custom Device:
+   UUID: e1142a5a-5ab1-47ea-a994-10e332df0870
+   Type: urn:CompanyName-com:device:CustomDevice:1
+   Location is http://10.0.0.78:80/root/customDevice
+   Custom Device Services:
+      Custom Service:
+         Type: urn:CompanyName-com:service:CustomService:1
+         Location is http://10.0.0.78:80/root/customDevice/customService
+Base Device:
+   UUID: 718c97bc-fa47-4dd9-8a7e-291cba6eb82b
+   Type: urn:LeelanauSoftware-com:device:Basic:1
+   Location is http://10.0.0.78:80/root/baseDevice
+   Base Device Services:
+      Base Service:
+         Type: urn:LeelanauSoftware-com:service:Basic:1
+         Location is http://10.0.0.78:80/root/baseDevice/baseService
+CustomDevice virtual UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and static upnpType is urn:CompanyName-com:device:CustomDevice:1
+Proper down cast from CustomDevice* (&c) to UPnPObject* (obj)
+obj virtual UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (static) upnpType is urn:LeelanauSoftware-com:object:Basic:1
+Proper up cast from UPnPObject* (obj) to UPnPDevice* (dev)
+dev (virtual) UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (static) upnpType is urn:LeelanauSoftware-com:device:Basic:1
+Proper up cast from UPnPDevice* (dev) to CustomDevice* (cusDev) 
+cusDev (virtual) UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (static) upnpType is urn:CompanyName-com:device:CustomDevice:1
 ```
 
-In this example, the RootDevice is displayed at http://10.0.0.165:80/root, and the display will consist of a list of buttons, one for each of *Device 1* and *Device 2* (see figure 1 below). Note that the RootDevice display is slightly different at the base http://10.0.0.165:80/. In this view, Sensors and Controls are displayed inline and other UPnPDevices are displayed as buttons (see the discussion on Sensors below).
+**Note:** When CustomDevice* is cast as a UPnPObject*, note the difference in UPnPDevice type between the virtual function obj->getType() and the static obj->upnpType(). The static version returns the UPnPDevice type of the pointer class rather than CustomDevice.
+
+```
+   obj virtual UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (static) upnpType is urn:LeelanauSoftware-com:object:Basic:1
+```
+
+In this example, the RootDevice is displayed at http://10.0.0.165:80/root, and the display will consist of a list of buttons, one for each of *Custom Device* and *Base Device* (see figure 1 below). Note that the RootDevice display is slightly different at the base http://10.0.0.165:80/. In this view, Sensors and Controls are displayed inline and other UPnPDevices are displayed as buttons (see the discussion on Sensors below).
 
 *Figure 1 - RootDevice display at http://10.0.0.165:80/root*
 
 ![image1](/assets/image1.png)
+
 ## Creating a Custom Sensor
 As noted above, Sensor and Control display is different at the base url than at the root target. We will see how this works by building a simple Sensor class that displays the message "Hello from SimpleSensor". Starting with the class definition in [SimpleSensor.h](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SimpleSensor.h), notice the following:
 
