@@ -1,19 +1,15 @@
-
 /**
- *  
+ *  Boilerplate Test Harness
  */
 
-#include "UPnPDevice.h"
+#include "CustomDevice.h"
 
 using namespace lsc;
 
 #define AP_SSID "My_SSID"
-#define AP_PSK  "MYPSK"
+#define AP_PSK  "My_PSK"
 #define SERVER_PORT 80
 
-/**
- *   Conditional compilation for either ESP8266 or ESP32
- */
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 ESP8266WebServer  server(SERVER_PORT);
@@ -26,16 +22,13 @@ WebServer*       svr = &server;
 #define          BOARD "ESP32"
 #endif
 
-/**
- *   Device hierarchy will consist of a RootDevice (root) with two embedded devices (d1 and d2),
- *   and two services (s1 and s2) attached to d1. 
- */
 WebContext       ctx;
-RootDevice       root;
-UPnPDevice       d1;
-UPnPDevice       d2;
-UPnPService      s1;
-UPnPService      s2;
+
+RootDevice    root;
+CustomDevice  c;
+UPnPDevice    d;
+CustomService cs;
+UPnPService   s;
 
 void setup() {
   Serial.begin(115200);
@@ -44,7 +37,7 @@ void setup() {
   }
 
   Serial.println();
-  Serial.printf("Starting UPnPDevice Test for Board %s\n",BOARD);
+  Serial.printf("Starting CustomDevice for Board %s\n",BOARD);
 
   WiFi.begin(AP_SSID,AP_PSK);
   Serial.printf("Connecting to Access Point %s\n",AP_SSID);
@@ -55,41 +48,46 @@ void setup() {
   server.begin();
   ctx.setup(svr,WiFi.localIP(),SERVER_PORT);
   Serial.printf("Web Server started on %s:%d/\n",ctx.getLocalIPAddress().toString().c_str(),ctx.getLocalPort());
-
-/**
- *  Build devices and set names and targets. Note that device targets must be unique
- *  relative to the RootDevice
- */ 
-  d1.setDisplayName("Device 1");
-  d1.setTarget("device1");
-  d2.setDisplayName("Device 2");
-  d2.setTarget("device2");
-
-/**
- *  Build the services and set the heirarchy
- */
-  s1.setDisplayName("Service 1");
-  s1.setTarget("service1");
-  s2.setDisplayName("Service 2");
-  s2.setTarget("service2");
-  d1.addServices(&s1,&s2);
+  
+  cs.setDisplayName("Custom Service");
+  cs.setTarget("customService");
+  s.setTarget("baseService");
+  s.setDisplayName("Base Service");
+  c.addService(&cs);
+  c.setDisplayName("Custom Device");
+  c.setTarget("customDevice");
+  d.addService(&s);
+  d.setDisplayName("Base Device");
+  d.setTarget("baseDevice");
   root.setDisplayName("Root Device");
   root.setTarget("root");  
-  root.addDevices(&d1,&d2);
-
-/**
- *  Set up the device hierarchy and register HTTP request handlers
- */
+  root.addDevices(&c,&d);
   root.setup(&ctx);
   
-/**
- *  Print UPnPDevice info to Serial
- */
-  UPnPDevice::printInfo(&root);  
+  RootDevice::printInfo(&root);  
+
+  UPnPObject* obj = (UPnPObject*) c.as(UPnPObject::classType());
+  Serial.printf("CustomDevice virtual UPnP Type is %s and static upnpType is %s\n",c.getType(),c.upnpType());
+  if( obj != NULL ) {
+    Serial.printf("Proper down cast from CustomDevice* (&c) to UPnPObject* (obj)\n");
+    Serial.printf("obj virtual UPnP Type is %s and (static) upnpType is %s\n",obj->getType(),obj->upnpType());
+    UPnPDevice* dev = (UPnPDevice*) obj->as(UPnPDevice::classType());
+    if( dev != NULL ) {
+       Serial.printf("Proper up cast from UPnPObject* (obj) to UPnPDevice* (dev)\n");
+       Serial.printf("dev (virtual) UPnP Type is %s and (static) upnpType is %s\n",dev->getType(),dev->upnpType());
+       CustomDevice* cusDev = (CustomDevice*)dev->as(CustomDevice::classType());
+       if( cusDev != NULL ) {
+         Serial.printf("Proper up cast from UPnPDevice* (dev) to CustomDevice* (cusDev) \n");
+         Serial.printf("cusDev (virtual) UPnP Type is %s and (static) upnpType is %s\n",cusDev->getType(),cusDev->upnpType());
+       }
+       else Serial.printf("Could NOT up cast from UPnPDevice* to CustomDevice*\n");      
+    }
+    else Serial.printf("Could NOT up cast from UPnPObject* to UPnPDevice*\n");
+  }
+  else Serial.printf("Could NOT down cast from CustomDevice* to UPnPObject\n");
 
 }
 
 void loop() {
   server.handleClient();
 }
-
