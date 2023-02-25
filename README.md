@@ -251,7 +251,8 @@ In the example above, output to Serial will be
 ```
 Starting CustomDevice for Board ESP8266
 Connecting to Access Point My_SSID
-...........WiFi Connected to My_SSID with IP address: 10.0.0.165
+...........
+WiFi Connected to My_SSID with IP address: 10.0.0.165
 RootDevice Root Device:
    UUID: 032bd3df-6fc1-47c1-8835-b40d3e968ad5
    Type: urn:LeelanauSoftware-com:device:RootDevice:1
