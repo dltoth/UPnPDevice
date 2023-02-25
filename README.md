@@ -290,7 +290,7 @@ UPnPObject* virtual UPnP Type is *urn:CompanyName-com:device:CustomDevice:1* and
 
 In this example, the RootDevice is displayed at http://<span></span>10.0.0.78:80, and the display will consist of a list of buttons, one for each of *Custom Device* and *Base Device*, and a *This Device* button (see figure 1 below). Selecting *This Device* will go to the url http://<span></span>10.0.0.78:80/root and consist of only the two buttons, one for each device. The reason for this subtle difference will be more apparent in the discussion on Sensors below, but essentially, at the base url http://<span></span>10.0.0.78:80, the display for Sensors and Controls are displayed inline with the RootDevice display, but non-Sensors (Controls) are displayed ad buttons.
 
-*Figure 1 - RootDevice display at http://10.0.0.78:80/root*
+*Figure 1 - RootDevice display at http://<span></span>10.0.0.78:80/root*
 
 ![image1](/assets/image1.png)
 
@@ -492,27 +492,27 @@ void SimpleSensor::setup(WebContext* svr) {
 }
 ```
 
-The Sketch that instantiates a SimpleSensor and adds it to a RootDevice can be found [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino). We won't go into sketch detail here, but flash your device and point a browser to the device base URL (http://IPAdress:80/). You will see figure 2 below.
+The Sketch that instantiates a SimpleSensor and adds it to a RootDevice can be found [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino). We won't go into sketch detail here, but flash your device and point a browser to the device base URL (http://<span></span>IPAdress:80/). You will see figure 2 below.
 
-*Figure 2 - SimpleSensor display at http://10.0.0.165:80/
+*Figure 2 - SimpleSensor display at http://<span></span>10.0.0.165:80/
 
 ![image2](/assets/image2.png)
 
 Notice Sensor displays is its message, and selecting the "This Device" button will display all of the RootDevice embedded devices as buttons. In this case, the single "Simple Sensor" button on figure 3.
 
-*Figure 3 - SimpleSensor display at http://10.0.0.165:80/root/*
+*Figure 3 - SimpleSensor display at http://<span></span>10.0.0.165:80/root/*
 
 ![image3](/assets/image3.png)
 
 Now, selecting the "Simple Sensor" button will trigger device display, which is Sensor display with a "Configure" button, as in figure 4.
 
-*Figure 4 - SimpleSensor device at http://10.0.0.165/root/sensor/*
+*Figure 4 - SimpleSensor device at http://<span></span>10.0.0.165/root/sensor/*
 
 ![image4](/assets/image4.png)
 
 Now, selecting the "Configure" button will bring up default configuration. Default configuration for both Sensors and Controls is simply their display name, as in figure 5.
 
-*Figure 5 - SimpleSensor device at http://10.0.0.165/device/sensor/setConfiguration/configForm*
+*Figure 5 - SimpleSensor device at http://<span></span>10.0.0.165/device/sensor/setConfiguration/configForm*
 
 ![image5](/assets/image5.png)
 
@@ -619,6 +619,7 @@ SensorWithConfig::SensorWithConfig() : SimpleSensor("urn:LeelanauSoftwareCo-com:
 
 The HTTP request handler for setting configuration expects only two possible arguments, either
 DISPLAYNAME or MSG. 
+
 ```
 /**
  *  Configuration has 2 possible arguments:
@@ -677,9 +678,9 @@ void SensorWithConfig::configForm(WebContext* svr) {
 }
 ```
 
-We can go back to the same sketch [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino), and instead instantiat a SensorWithConfig. Flash your device and point a browser to the device base URL (http://IPAdress:80/). As before, the Sensor displays is its message, and selecting the "This Device" button will display all of the RootDevice embedded devices as buttons. In this case, a single "Sensor With Config" button. Selecting that button, and then selecting the "Configure" button you will see figure 6 below.
+We can go back to the same sketch [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino), and instead instantiat a SensorWithConfig. Flash your device and point a browser to the device base URL (http://<span></span>IPAdress:80/). As before, the Sensor displays is its message, and selecting the "This Device" button will display all of the RootDevice embedded devices as buttons. In this case, a single "Sensor With Config" button. Selecting that button, and then selecting the "Configure" button you will see figure 6 below.
 
-*Figure 6 - SensorWithConfig device at http://10.0.0.165/device/sensorwc/setConfiguration/configForm*
+*Figure 6 - SensorWithConfig device at http://<span></span>10.0.0.165/device/sensorwc/setConfiguration/configForm*
 
 ![image6](/assets/image6.png)
 
