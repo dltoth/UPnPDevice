@@ -1,5 +1,5 @@
 # UPnPDevice
-Developing applications for Arduino (ESP8266 and ESP32) requires creating custom HTML for the user interface. UPnPDevice is a framework for HTML user interface that follows the [UPnP Device Arcihtecture](http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf). When coupled with the additional [SSDP library](https://github.com/dltoth/ssdp) also provides simple service discovery. This library provides a set of base classes for building a UPnP Device hierarchy and advertising it over a local network. 
+Developing applications for Arduino (ESP8266 and ESP32) requires creating custom HTML for the user interface. UPnPDevice is a framework for HTML user interface that follows the [UPnP Device Arcihtecture](http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf). When coupled with the additional [SSDP library](https://github.com/dltoth/ssdp) also provides simple service discovery. UPnPDevice is a set of base classes for building a UPnP device hierarchy that can be advertised with SSDP over a local network. 
 
 The set of classes include:
 
@@ -10,6 +10,7 @@ The set of classes include:
                       UPnPServices
   UPnPService      := A base class for UPnP services. Services have a callable HTTP 
                       interface
+  UPnPObject       := The base class for RootDevice, UPnPDevice, and UPnPService
   Sensor           := A virtual base UPnPDevice that has simple output based display, like 
                       a Thermometer or Clock
   Control          := A virtual base UPnPDevice with more complex display, including user 
@@ -21,21 +22,21 @@ The set of classes include:
 
 Both Sensor and Control include default GetConfiguration and SetConfiguration Services, as does RootDevice.
 
-In what follows a conceptual framework for the library is presented, and 4 examples will be detailed:
- 1. UPnPDevice hierarchy
+In what follows, a conceptual framework for the library is presented, and 4 examples will be detailed:
+ 1. Creating a custom UPnPDevice and hierarchy
  2. Creating a simple Sensor that displays a message
  3. Adding configuration to that Sensor
  4. Creating a simple control implementing a toggle.
 
 ## Conceptual Framework
 
-UPnP Defines three basic constructs: root devices, embedded devices, and services, where both root devices and embedded devices can have services and embedded devices, but services may not have embedded devices. Essentially, a root device is a container for a device heirarchy consisting of embedded devices and services. UPnP does not limit the depth or breadth of a device heirarchy. Root devices publish their functionality over HTTP and discovery (SSDP) over UDP. 
+UPnP Defines three basic constructs: root devices, embedded devices, and services, where both root devices and embedded devices can have services and embedded devices. Services are leaf odes of the hierarchy and may not have either embedded devices or services. Essentially, a root device is a container for a device heirarchy consisting of embedded devices and services. UPnP does not limit the depth or breadth of a device heirarchy. Root devices publish their functionality over HTTP and discovery (SSDP) over UDP. 
 
 In this library, only root devices ([RootDevice](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPDevice.h)) can have embedded devices ([UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPDevice.h)), and the number of embedded devices is limited to 8. Both RootDevices and embedded devices can have services ([UPnPService](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPService.h)), and the number of services is also limited to 8. In terms of class heirarchy, RootDevice is a subclass of UPnPDevice, which in turn is a subclass of [UPnPObject](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPService.h), and UPnPService is a subclass of UPnPObject.
 
 ### Runtime Type Identification (RTTI) and UPnP Device Type
 
-UPnPObjects include the notion of class type for runtime type identification (RTTI). RTTI provides typesafe casting and is required by all UPNPDevices and UPnPServices. Additionally, UPnPDevices and UPnPServices have a UPnP device type (or service type). Device Type is a UPnP required construct of the form
+UPnPObjects include the notion of class type for runtime type identification (RTTI). RTTI allows typesafe casting and is required by all UPnPDevices and UPnPServices. Additionally, UPnPDevices and UPnPServices have a UPnP device type (or service type). Device Type is a UPnP required construct of the form
 
 ```
    urn:CompanyName:device:deviceName:version
@@ -43,7 +44,7 @@ or
    urn:CompanyName:service:serviceName:version
 ```
 
-Where CompanyName is the company domain name with "-" substituting ".". For example "urn:LeelanauSoftware-com:device:Thermometer:1" is the device type for [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h) offered by LeelanauSoftware.com. Device and Service type are used for SSDP service discovery, to find specific device types on the local network. UPnP restricts the device (service) type to 64 characters.
+Where CompanyName is the company domain name with "-" substituting ".". For example "urn:LeelanauSoftware-com:device:Thermometer:1" is the device type for [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h) offered by LeelanauSoftware.com. Device and Service type are used for SSDP service discovery to find specific device types on the local network. UPnP restricts the device (or service) type to 64 characters.
 
 The following macros are used to define RTTI and UPnP Device type in the header file of a UPnPDevice subclass:
 
@@ -52,7 +53,7 @@ The following macros are used to define RTTI and UPnP Device type in the header 
       DERIVED_TYPE_CHECK(baseName);
 ```
 
-which adds the following lines of code in the header file for the class:
+The macros add the following lines of code to the header file for the class:
 
 ```
       private: static const ClassType  _classType;             
@@ -74,11 +75,11 @@ which adds the following lines of code in the header file for the class:
       INITIALIZE_UPnP_TYPE(className,urn:company-name:device:deviceName:1);
 ```
 
-where *className* is the class name of the UPnPDevice being defined, *company-name* is the company name described earlier, and *deviceName* is the unique device name.
+where *className* is the class name of the UPnPDevice being defined, *company-name* is the company name described earlier, and *deviceName* is the unique UPnP device name.
 
 **Why RTTI?**
 
-Since each embedded UPnPDevice provides its own functionality, one device may rely on another. For example, a timer controlled relay may require a [SoftwareClock](https://github.com/dltoth/DeviceLib/blob/main/src/SoftwareClock.h), or a humidity controlled fan may require a [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h). A device implementer, being familiar with onboard embedded devices, will know if a device or service is available. 
+Since each embedded UPnPDevice provides its own bit of functionality, one device may rely on another. For example, a timer controlled relay may require a [SoftwareClock](https://github.com/dltoth/DeviceLib/blob/main/src/SoftwareClock.h), or a humidity controlled fan may require a [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h). A device implementer, being familiar with onboard embedded devices, will know if a device or service is available. 
 
 First note that any UPnPObject can retrieve a pointer to the RootDevice as:
 
@@ -98,7 +99,7 @@ can be used to retrieve a pointer to a SoftwareClock. If SoftwareClock is an emb
 
 ### Device Instantiation
 
-All of the UPnPDevice classes are expected to be constructed and managed in global scope above the setup() function in an Arduino sketch. Copy construction and and Object destruction are not allowed, objects are expected to live over the life of an executing application. UPnPObjects are passed via pointer. The following macro is used to enforce this behavior:
+All of the UPnPDevice classes are expected to be constructed and managed in global scope above the setup() function in an Arduino sketch. Copy construction and and Object destruction are not allowed; objects are expected to live over the life of an executing application. UPnPObjects are passed via pointer. The following macro is used to enforce this behavior:
 
 ```
    DEFINE_EXCLUSIONS(className);
@@ -160,9 +161,9 @@ The implemention of CustomDevice will provide basic device display, RTTI, and de
 
 ## Default Device Hierarchy and Display
 
-All devices are displayed with a set of HTML entities and styles defined in [CommonUtil](https://github.com/dltoth/CommonUtil). A number of the examples presented here also use HTML formatting functions found there as well. In particular, [formatHeader](https://github.com/dltoth/CommonUtil/blob/main/src/CommonProgmem.h) will format an HTML header for a web page that includes a reference to the CSS stylesheet **/styles.css**; RootDevice will register the HTML request handler for **/styles.css** on setup.
+All devices are displayed with a set of HTML entities and styles defined in [CommonUtil](https://github.com/dltoth/CommonUtil). A number of the examples presented here also use HTML formatting functions found there as well. In particular, [formatHeader](https://github.com/dltoth/CommonUtil/blob/main/src/CommonProgmem.h) will format an HTML header for a web page that includes a reference to the CSS stylesheet **/styles.css**; RootDevice will register an HTML request handler for **/styles.css** on setup.
 
-See the sketch folder [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/) for an example of creating a device hierarchy. Notice header and implementation files for [CustomDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/CustomDevice.h) have been added, and CustomService has been added as well. Looking at the [sketch](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/UPnPDevice.ino), notice the following:
+See the sketch folder [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/) for an example of creating a device hierarchy consisting of a RootDevice, CustomDevice, and a UPnPdevice. Notice header and implementation files for [CustomDevice](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/CustomDevice.h) have been included, and CustomService has been added as well. Looking at the [sketch](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/UPnPDevice.ino), notice the following:
 
 **Namespace Declaration**
 
@@ -174,7 +175,7 @@ using namespace lsc;
 
 **Instantiating Devices and Services**
 
-WebContext is a WebServer abstraction for ESP8266 and ESP32.
+These declarations go above the setup() routine of the sketch. The Web Server *server* has been conditionally compiled for either ESP8266 or ESP32 and *svr* is a pointer to *server*. WebContext is a Web server abstraction and will be initialized with the Web server inside of setup().
 
 ```
 /**
@@ -189,7 +190,16 @@ CustomService cs;
 UPnPService   s;
 ```
 
-A base UPnPDevice *d* and CustomDevice *c* will be added to the RoodDevice *root*, and base UPnPService *s* will be added to *d*, with CustomService *cs* added to c.
+**Initializing the WebContext***
+
+Device hierarchy is defined inside of the setup() routine, but first, WebContext is initialized:
+
+```
+  server.begin();
+  ctx.setup(svr,WiFi.localIP(),SERVER_PORT);
+```
+
+Device hierarchy is defined with base UPnPDevice *d* and CustomDevice *c* added to the RoodDevice *root*, with base UPnPService *s* added to *d*, and CustomService *cs* added to c.
 
 **Building Devices and Setting Hierarchy**
 
@@ -232,12 +242,14 @@ A base UPnPDevice *d* and CustomDevice *c* will be added to the RoodDevice *root
 
 The RootDevice setup() function runs through each embedded device calling setup() for that device.
 
-**Note:** The RootDevice registers HTTP request handlers for both the base URL (http://IPAddress:port/) and root target URL (http://IPAddress:port/root/), so each RootDevice requires its own WebServer with unique port. It is customary however, to have only a single RootDevice per ESP device. This shouldn't present a problem since the RootDevice functions mainly as a container for embedded UPnPDevices, which in turn provide functionality.
+**Note:** The RootDevice registers HTTP request handlers for both the base URL (http://IPAddress:port/) and root target URL (http://IPAddress:port/root/), so each RootDevice requires its own WebServer with unique port. It is customary however, to have only a single RootDevice per ESP device. This shouldn't present a problem since UPnPDevices and UPnPServices provide building blocks for functionality and RootDevice functions mainly as a container.
+
+The remainder of the sketch outputs UPnPDevice info for the heirarchy to Serial, and then runs through down-cast from CustomDevice* to UPnPObject* and up-cast from UPnPObject* to CustomDevice*, using RTTI and UPnP device type.
 
 In the example above, output to Serial will be
 
 ```
-Starting UPnPDevice Test for Board ESP8266
+Starting CustomDevice for Board ESP8266
 Connecting to Access Point My_SSID
 ...........WiFi Connected to My_SSID with IP address: 10.0.0.165
 RootDevice Root Device:
@@ -271,15 +283,13 @@ Proper up cast from UPnPDevice* (dev) to CustomDevice* (cusDev)
 cusDev (virtual) UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (static) upnpType is urn:CompanyName-com:device:CustomDevice:1
 ```
 
-**Note:** When CustomDevice* is cast as a UPnPObject*, note the difference in UPnPDevice type between the virtual function obj->getType() and the static obj->upnpType(). The static version returns the UPnPDevice type of the pointer class rather than CustomDevice.
+**Note:** When CustomDevice* is cast as a UPnPObject*, note the difference in UPnPDevice type between the virtual function obj->getType() and the static obj->upnpType(). The static version returns the UPnPDevice type of the pointer class rather than CustomDevice:
 
-```
-   obj virtual UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (static) upnpType is urn:LeelanauSoftware-com:device:Object:1
-```
+UPnPObject* virtual UPnP Type is *urn:CompanyName-com:device:CustomDevice:1* and (static) upnpType is *urn:LeelanauSoftware-com:device:Object:1*
 
-In this example, the RootDevice is displayed at http://10.0.0.165:80/root, and the display will consist of a list of buttons, one for each of *Custom Device* and *Base Device* (see figure 1 below). Note that the RootDevice display is slightly different at the base http://10.0.0.165:80/. In this view, Sensors and Controls are displayed inline and other UPnPDevices are displayed as buttons (see the discussion on Sensors below).
+In this example, the RootDevice is displayed at http://10.0.0.78:80, and the display will consist of a list of buttons, one for each of *Custom Device* and *Base Device*, and a *This Device* button (see figure 1 below). Selecting *This Device* will go to the url http://10.0.0.78:80/root and consist of only the two buttons, one for each device. The reason for this subtle difference will be more apparent in the discussion on Sensors below, but essentially, at the base url http://10.0.0.78:80, the display for Sensors and Controls are displayed inline with the RootDevice display.
 
-*Figure 1 - RootDevice display at http://10.0.0.165:80/root*
+*Figure 1 - RootDevice display at http://10.0.0.78:80/root*
 
 ![image1](/assets/image1.png)
 
