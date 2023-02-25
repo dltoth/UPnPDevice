@@ -288,7 +288,7 @@ cusDev (virtual) UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (sta
 
 UPnPObject* virtual UPnP Type is *urn:CompanyName-com:device:CustomDevice:1* and (static) upnpType is *urn:LeelanauSoftware-com:device:Object:1*
 
-In this example, the RootDevice is displayed at http://10.0.0.78:80, and the display will consist of a list of buttons, one for each of *Custom Device* and *Base Device*, and a *This Device* button (see figure 1 below). Selecting *This Device* will go to the url http://10.0.0.78:80/root and consist of only the two buttons, one for each device. The reason for this subtle difference will be more apparent in the discussion on Sensors below, but essentially, at the base url http://10.0.0.78:80, the display for Sensors and Controls are displayed inline with the RootDevice display.
+In this example, the RootDevice is displayed at http://10.0.0.78:80, and the display will consist of a list of buttons, one for each of *Custom Device* and *Base Device*, and a *This Device* button (see figure 1 below). Selecting *This Device* will go to the url http://10.0.0.78:80/root and consist of only the two buttons, one for each device. The reason for this subtle difference will be more apparent in the discussion on Sensors below, but essentially, at the base url http://10.0.0.78:80, the display for Sensors and Controls are displayed inline with the RootDevice display, but non-Sensors (Controls) are displayed ad buttons.
 
 *Figure 1 - RootDevice display at http://10.0.0.78:80/root*
 
