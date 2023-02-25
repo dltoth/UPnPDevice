@@ -22,16 +22,15 @@ const char  SensorWithConfig_config_template[]  PROGMEM = "<?xml version=\"1.0\"
 
 /**
  *   Config Form template to allow input of Sensor message and display name
- *   It includes the url for form submit, sensor display name, sensor message, and url for the cancel button
  */
-const char  SensorWithConfig_config_form[] PROGMEM = "<br><br><form action=\"%s\">"             // Form submit path
+const char  SensorWithConfig_config_form[] PROGMEM = "<br><br><form action=\"%s\">"             // Form submit path 
             "<div align=\"center\">"
               "<label for=\"displayName\">Sensor Name &nbsp &nbsp</label>"
-              "<input type=\"text\" placeholder=\"%s\" name=\"displayName\"><br><br>"           // Sensor displayName
+              "<input type=\"text\" placeholder=\"%s\" name=\"displayName\"><br><br>"           // Sensor displayName  
               "<label for=\"msg\">Sensor Message &nbsp </label>"
               "<input type=\"text\" placeholder=\"%s\" name=\"msg\">&nbsp<br><br>"              // Sensor Message     
               "<button class=\"fmButton\" type=\"submit\">Submit</button>&nbsp&nbsp"
-              "<button class=\"fmButton\" type=\"button\" onclick=\"window.location.href=\'%s\';\">Cancel</button>"
+              "<button class=\"fmButton\" type=\"button\" onclick=\"window.location.href=\'%s\';\">Cancel</button>"  
             "</div></form>";
 
 /** Leelanau Software Company namespace 
@@ -40,6 +39,7 @@ const char  SensorWithConfig_config_form[] PROGMEM = "<br><br><form action=\"%s\
 using namespace lsc;
 
 INITIALIZE_STATIC_TYPE(SensorWithConfig);
+INITIALIZE_UPnP_TYPE(SensorWithConfig,urn:LeelanauSoftware-com:device:SensorWithConfig:1);
 
 /**
  *   Type is the UPnP required device type, defined as urn:CompanyName:device:deviceName:version where CompanyName 
@@ -49,14 +49,14 @@ INITIALIZE_STATIC_TYPE(SensorWithConfig);
  *   where rootTarget is set on the RootDevice.
  *   Configuration is managed via http handler and form handler set on the Get/SetConfiguration services, included with Sensor.
  */
-SensorWithConfig::SensorWithConfig() : SimpleSensor("urn:LeelanauSoftwareCo-com:device:SensorWithConfig:1","sensorwc") {
+SensorWithConfig::SensorWithConfig() : SimpleSensor("sensorwc") {
   setDisplayName("Sensor With Config");
   Sensor::setConfiguration()->setHttpHandler([this](WebContext* svr){this->setConfiguration(svr);});
   Sensor::setConfiguration()->setFormHandler([this](WebContext* svr){this->configForm(svr);});
   Sensor::getConfiguration()->setHttpHandler([this](WebContext* svr){this->getConfiguration(svr);});
 }
 
-SensorWithConfig::SensorWithConfig(const char* type, const char* target) : SimpleSensor(type, target) {
+SensorWithConfig::SensorWithConfig(const char* target) : SimpleSensor(target) {
   setDisplayName("Sensor With Config");
   Sensor::setConfiguration()->setHttpHandler([this](WebContext* svr){this->setConfiguration(svr);});
   Sensor::setConfiguration()->setFormHandler([this](WebContext* svr){this->configForm(svr);});

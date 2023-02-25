@@ -16,12 +16,12 @@ using namespace lsc;
 
 /**
  *   Simple Sensor Example with default configuration
- **/
+**/
 class SimpleSensor : public Sensor {
 
     public:
       SimpleSensor();
-      SimpleSensor( const char* displayName, const char* target);
+      SimpleSensor( const char* target);
 
       const char*    getMessage() {return _msg;}
 
