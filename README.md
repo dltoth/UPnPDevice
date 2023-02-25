@@ -615,9 +615,9 @@ void SensorWithConfig::configForm(WebContext* svr) {
 }
 ```
 
-Now, using the same sketch [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino), and instead instantiating a SensorWithConfig, the Sensor will display its messag. Selecting the "This Device" button will display all of the RootDevice embedded devices as buttons, In this case, a single "Sensor With Config" button. Selecting that button, and then selecting the "Configure" button will present the config form in figure 6 below.
+Now, using the same sketch [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino), and instead instantiating a SensorWithConfig, the Sensor will display its messag. Selecting the "This Device" button will display all of the RootDevice embedded devices as buttons, in this case, a single "Sensor With Config" button. Selecting that button, and then selecting the "Configure" button will present the config form in figure 6 below.
 
-*Figure 6 - SensorWithConfig device at http://<span></span>10.0.0.165/device/sensorwc/setConfiguration/configForm*
+*Figure 6 - SensorWithConfig device at http://<span></span>10.0.0.78/device/sensorwc/setConfiguration/configForm*
 
 ![image6](/assets/image6.png)
 
