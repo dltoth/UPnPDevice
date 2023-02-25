@@ -229,7 +229,7 @@ Device hierarchy is defined with base UPnPDevice *d* and CustomDevice *c* added 
   root.setup(&ctx);
 ```
 
-**Note:** Display name is used in HTML display and target is used in url creation. HTML request handlers are set on target urls, so targets must be unique relative to RootDevice and UPnPDevices.
+**Note:** Display name is used in HTML display and target is used in url creation. HTML request handlers are set on target urls, so targets must be unique relative to RootDevice and UPnPDevices. Also note that display name and target can be set in the constructor for CustomDevice, so the default constructor could be used in the sketch.
 
 **Registerring HTTP Request Handlers**
 
@@ -295,7 +295,8 @@ In this example, the RootDevice is displayed at http://<span></span>10.0.0.78:80
 ![image1](/assets/image1.png)
 
 ## Creating a Custom Sensor
-As noted above, Sensor and Control display is different at the base url than at the root target. We will see how this works by building a simple Sensor class that displays the message "Hello from SimpleSensor". Starting with the class definition in [SimpleSensor.h](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SimpleSensor.h), notice the following:
+
+As noted above, Sensor and Control display will be different at the base url than at the root target. Starting with [SimpleSensor.h](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SimpleSensor.h), notice the following:
 
 **Namespace declaration**
 
@@ -305,27 +306,21 @@ using namespace lsc;
 
 **Class Declaration**
 
-SimpleSensor derives from Sensor
+SimpleSensor derives from Sensor, constructors are required by [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPDevice.h).
 
 ```
 /**
  *   Simple Sensor Example with default configuration
  **/
 class SimpleSensor : public Sensor {
-```
 
-**Required Constructors**
-
-These constructors are required by [UPnPDevice](https://github.com/dltoth/UPnPDevice/blob/main/src/UPnPDevice.h), we'll see why in the class implementation.
-
-```
       SimpleSensor();
-      SimpleSensor( const char* displayName, const char* target);
+      SimpleSensor(const char* target);
 ```
 
 **Additional Required Methods**
 
-Setup() is required for implementation specific initialization. Here we use it to set the initial message, although that could have been done in any number of other ways. Content() is important, as that's the method that will supply HTML to RootDevice.
+Setup() is required for implementation specific initialization. Here it is used to set the initial message, although that could have been done in any number of other ways. Content() is important to supply HTML to RootDevice.
 
 ```
 /**
@@ -343,47 +338,14 @@ Setup() is required for implementation specific initialization. Here we use it t
 
 **Runtime Type Identification (RTTI)**
 
-Runtime Type Identification is required by all UPNPDevices and UPnPServices; it's part of the base UPnPObject class definition allowing typesafe casting. 
-
-The following macros are used to define RTTI:
-
 ```
-/**
- *   Macros to define the following Runtime Type Info:
- *     private: static const ClassType  _classType;             
- *     public:  static const ClassType* classType();   
- *     public:  virtual void*           as(const ClassType* t);
- *     public:  virtual boolean         isClassType( const ClassType* t);
- */
       DEFINE_RTTI;
       DERIVED_TYPE_CHECK(Sensor);
 ```
 
-Notice the macro DERIVED_TYPE_CHECK(Sensor) declares SimpleSensor as being a subclass of Sensor. Without explicitly including these macros SimpleSensor would inherit its type from Sensor and be considered a Sensor as far as RTTI.
-
-**Why RTTI?**
-
-Since each embedded UPnPDevice provides its own functionality, one device may rely on another. For example, a timer controlled relay may require a [SoftwareClock](https://github.com/dltoth/DeviceLib/blob/main/src/SoftwareClock.h), or a humidity controlled fan may require a [Thermometer](https://github.com/dltoth/DeviceLib/blob/main/src/Thermometer.h). Since you are building your device, you now about its onboard embedded devices. 
-
-First note that any UPnPObject can retrieve a pointer to the RootDevice as:
-
-```
-   RootDevice* root = rootDevice();
-```
-
-So, if your RootDevice is expected to include a [SoftwareClock](https://github.com/dltoth/DeviceLib/blob/main/src/SoftwareClock.h), then you can use the static RootDevice method
-
-```
-   SoftwareClock* clock = (SoftwareClock*)RootDevice::getDevice(rootDevice(), SoftwareClock::classType());
-```
-
-to retrieve a pointer to a SoftwareClock. If SoftwareClock is an embedded device and setup() has been called on the RootDevice, clock will be non-NULL. 
-
-**Important:** RootDevice setup() instantiates the device hierarchy, so RootDevice::getDevice() will necessarily return NULL until all UPnPDevices and UPnPServices have been added and setup has been called.
-
 **Define a Message Buffer**
 
-We use a fixed length character array for the message buffer
+We use a fixed length character array for the message buffer, which will be reused when configuration is added.
 
 ```
    protected:
@@ -394,17 +356,12 @@ We use a fixed length character array for the message buffer
 
 **Copy Construction and Destruction are Not Allowed**
 
-**Important:** UPnPObjects should be declared above the ESP setup() function as global variables and any reference to these objects should be by pointer to these declared objects. Memory is allocated for the life of the application. 
 ```
-/**
- *   Copy Construction and Deletion are not allowed
- */
-    private:
-    SimpleSensor(const SimpleSensor&)= delete;
-    SimpleSensor& operator=(const SimpleSensor&)= delete;
+     DEFINE_EXCLUSIONS(SimpleSensor);         
+
 ```
 
-So now let's move on the the implementation file [SimpleSensor.cpp](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SimpleSensor.cpp) and notice the following:
+Moving on the the implementation file [SimpleSensor.cpp](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SimpleSensor.cpp), notice the following:
 
 **Message Template in PROGMEM**
 
@@ -414,7 +371,7 @@ A template for the message HTML is defined in PROGMEM
 const char  sensor_msg[]  PROGMEM = "<p align=\"center\">Sensor Message is:  %s </p>";
 ``` 
 
-Once again using the lsc namespace, and then static RTTI type initialization is done here
+Once again using the lsc namespace, and then static RTTI and UPnP type initialization is done here
 
 ```
 /** Leelanau Software Company namespace 
@@ -423,40 +380,22 @@ Once again using the lsc namespace, and then static RTTI type initialization is 
 using namespace lsc;
 
 INITIALIZE_STATIC_TYPE(SimpleSensor);
+INITIALIZE_UPnP_TYPE(SimpleSensor,urn:LeelanauSoftware-com:device:SimpleSensor:1);
 ```
 
 **UPnPDevice Construction**
 
-UPnPDevice and UPnPService construction require a *Device Type* and *Target*. Device Type is a UPnP required construct of the form
+UPnPDevice construction requires a *Target*. 
 
 ```
-   urn:CompanyName:device:deviceName:version
-or
-   urn:CompanyName:service:serviceName:version
-```
+SimpleSensor::SimpleSensor() : Sensor("sensor") {setDisplayName("Simple Sensor");}
 
-Where CompanyName substitutes "." with "-". Target is the HTTP target for device display and must be unique with respect to the RootDevice. In the case of a UPnPService, target must be unique with respect to the UPnPDevice it is attached to. The constructor below sets the *DeviceType* to "urn:LeelanauSoftwareCo-com:device:SimpleSensor:1" and *target* to "sensor".
-
-```
-/**
- *   Type is the UPnP required device type, defined as urn:CompanyName:device:deviceName:version 
- *   where CompanyName substitutes "." with "-". Target is the Http target for device display, 
- *   which MUST be unique under the RootDevice. In this case:
- *      http://ip-address:port/rootTarget/sensor 
- *   where rootTarget is set on the RootDevice.
- */
-SimpleSensor::SimpleSensor() : Sensor("urn:LeelanauSoftwareCo-com:device:SimpleSensor:1","sensor") {
-  setDisplayName("Simple Sensor");
-}
-
-SimpleSensor::SimpleSensor(const char* type, const char* target) : Sensor(type, target) {
-  setDisplayName("Simple Sensor");
-}
+SimpleSensor::SimpleSensor(const char* target) : Sensor(target) {setDisplayName("Simple Sensor");}
 ```
 
 **Supply HTML Content to RootDevice**
 
-Next we define the content() method, notice it simply fills the input *buffer* with HTML based on the pre-defined PROGMEM template and the message from *getMessage()*.
+Next, the content() method is defined, notice it simply fills the input *buffer* with HTML based on the pre-defined PROGMEM template and the message from *getMessage()*.
 
 ```
 void SimpleSensor::content(char buffer[], int bufferSize) {
@@ -478,6 +417,7 @@ void SimpleSensor::setMessage(const char* m) {
   }
 }
 ```
+
 **Define the setup Method**
 
 The setup method initializes the message buffer to "Hello from Simple Sensor". Be sure to call *Sensor::setup()* on the base class to assure it is properly setup prior to any subclass setup.
@@ -492,27 +432,27 @@ void SimpleSensor::setup(WebContext* svr) {
 }
 ```
 
-The Sketch that instantiates a SimpleSensor and adds it to a RootDevice can be found [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino). We won't go into sketch detail here, but flash your device and point a browser to the device base URL (http://<span></span>IPAdress:80/). You will see figure 2 below.
+The Sketch that instantiates a SimpleSensor and adds it to a RootDevice can be found [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino). Once an ESP device is flashed with the sketch, point a browser to the device base URL (http://<span></span>IPAdress:80/). You will see figure 2 below.
 
-*Figure 2 - SimpleSensor display at http://<span></span>10.0.0.165:80/
+*Figure 2 - SimpleSensor display at http://<span></span>10.0.0.78:80/
 
 ![image2](/assets/image2.png)
 
-Notice Sensor displays is its message, and selecting the "This Device" button will display all of the RootDevice embedded devices as buttons. In this case, the single "Simple Sensor" button on figure 3.
+Notice Sensor displays is its message at the base url, and selecting the "This Device" button will send the browser to *http://<span></span>10.0.0.78:80/root/* and display all of the RootDevice embedded devices as buttons. In this case, the single "Simple Sensor" button on figure 3.
 
-*Figure 3 - SimpleSensor display at http://<span></span>10.0.0.165:80/root/*
+*Figure 3 - SimpleSensor display at http://<span></span>10.0.0.78:80/root/*
 
 ![image3](/assets/image3.png)
 
 Now, selecting the "Simple Sensor" button will trigger device display, which is Sensor display with a "Configure" button, as in figure 4.
 
-*Figure 4 - SimpleSensor device at http://<span></span>10.0.0.165/root/sensor/*
+*Figure 4 - SimpleSensor device at http://<span></span>10.0.0.78/root/sensor/*
 
 ![image4](/assets/image4.png)
 
 Now, selecting the "Configure" button will bring up default configuration. Default configuration for both Sensors and Controls is simply their display name, as in figure 5.
 
-*Figure 5 - SimpleSensor device at http://<span></span>10.0.0.165/device/sensor/setConfiguration/configForm*
+*Figure 5 - SimpleSensor device at http://<span></span>10.0.0.78/device/sensor/setConfiguration/configForm*
 
 ![image5](/assets/image5.png)
 
