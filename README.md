@@ -457,11 +457,11 @@ Now, selecting the "Configure" button will bring up default configuration. Defau
 ![image5](/assets/image5.png)
 
 ## Creating Custom Configuration
-Now let's look at creating custom configuration for SimpleSensor, see [SensorWithConfig.h](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorWithConfig.h) and notice SensorWithConfig is a subclass of SimpleSensor. In what follows, we will only discuss the important differences.
+Moving on to creating custom configuration for SimpleSensor, see [SensorWithConfig.h](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorWithConfig.h) and notice SensorWithConfig is a subclass of SimpleSensor. In what follows, only the important differences are discussed.
 
 **Define Required Methods**
 
-SimpleSensor has both SetConfiguration and GetConfiguration services. SetConfiguration requires a form handler to display an HTML configuration form, and a *submit* method for that form. Also since we are customizing configuration, we should also reflect that customization in the *getConfiguation* method.
+SensorWithConfig has both [SetConfiguration](https://github.com/dltoth/UPnPDevice/blob/main/src/Configuration.h) and [GetConfiguration](https://github.com/dltoth/UPnPDevice/blob/main/src/Configuration.h) services. SetConfiguration requires a form handler to display an HTML configuration form, and a *submit* method for that form. The GetConfiguration service should return an XML document describing Sensor configuration. Since we are customizing configuration, we should also reflect that customization in the *getConfiguation* method.
 
 ```
 /**
@@ -475,14 +475,15 @@ SimpleSensor has both SetConfiguration and GetConfiguration services. SetConfigu
 
 **Dont Forget RTTI**
 
-SensorWithConfig is a subclass of Sensor
+SensorWithConfig is a subclass of Sensor, and as before copy construction and destruction are excluded.
 
 ```
-      DEFINE_RTTI;
-      DERIVED_TYPE_CHECK(Sensor);
+     DEFINE_RTTI;
+     DERIVED_TYPE_CHECK(Sensor);
+     DEFINE_EXCLUSIONS(SensorWithConfig);         
 ```
 
-Now let's move on the the implementation file [SensorWithConfig.cpp](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorWithConfig.cpp).
+Moving on to the the implementation file [SensorWithConfig.cpp](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorWithConfig.cpp), notice the following:
 
 **Define PROGMEM Templates**
 
@@ -525,12 +526,13 @@ const char  SensorWithConfig_config_form[] PROGMEM = "<br><br><form action=\"%s\
             "</div></form>";
 ```
 
-**Define Namespace and static RTTI**
+**Define Namespace and Static RTTI and UPnP Types**
 
 ```
 using namespace lsc;
 
 INITIALIZE_STATIC_TYPE(SensorWithConfig);
+INITIALIZE_UPnP_TYPE(SensorWithConfig,urn:LeelanauSoftware-com:device:SensorWithConfig:1);
 ```
 
 **Define Constructors**
@@ -538,16 +540,11 @@ INITIALIZE_STATIC_TYPE(SensorWithConfig);
 HTTP request handlers are set on the Sensor GetConfiguration and SetConfiguration UPnPServices directly. A pointer 
 to each service is provided by Sensor::setConfiguration() and Sensor::getConfiguration() respectively. The form
 handler will present a configuration form, where form submission triggers setConfiguration().
+
+**Note:** The HTTP request handlers for GetConfigutation and SetConfiguration have already been set on the service and registerred on setup. Setting the handler here is actually a level of indirection that allows these services to be reused in multiple settings.
+
 ```
-/**
- *   Type is the UPnP required device type, defined as urn:CompanyName:device:deviceName:version where CompanyName 
- *   substitutes "." with "_". Target is the Http target for device display, which MUST be unique under the RootDevice. 
- *   In this case:
- *      http://ip-address:port/rootTarget/sensorwc 
- *   where rootTarget is set on the RootDevice.
- *   Configuration is managed via http handler and form handler set on the Get/SetConfiguration services, included with Sensor.
- */
-SensorWithConfig::SensorWithConfig() : SimpleSensor("urn:LeelanauSoftwareCo-com:device:SensorWithConfig:1","sensorwc") {
+SensorWithConfig::SensorWithConfig() : SimpleSensor("sensorwc") {
   setDisplayName("Sensor With Config");
   Sensor::setConfiguration()->setHttpHandler([this](WebContext* svr){this->setConfiguration(svr);});
   Sensor::setConfiguration()->setFormHandler([this](WebContext* svr){this->configForm(svr);});
@@ -595,7 +592,7 @@ Lastly, the form handler uses HTML formatting functions found in [CommonUtil](ht
 function supplies the HTML document header and style link, and *formatBuffer_P* is designed to take a **PROGMEM** template and fill
 an input buffer.
 
-**Note: The url for form submission is provided by setConfigutation::getPath**
+**Note:** The url for form submission is provided by the method setConfigutation::getPath()
 
 ```
 void SensorWithConfig::configForm(WebContext* svr) {
@@ -618,7 +615,7 @@ void SensorWithConfig::configForm(WebContext* svr) {
 }
 ```
 
-We can go back to the same sketch [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino), and instead instantiat a SensorWithConfig. Flash your device and point a browser to the device base URL (http://<span></span>IPAdress:80/). As before, the Sensor displays is its message, and selecting the "This Device" button will display all of the RootDevice embedded devices as buttons. In this case, a single "Sensor With Config" button. Selecting that button, and then selecting the "Configure" button you will see figure 6 below.
+Now, using the same sketch [here](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorDevice.ino), and instead instantiating a SensorWithConfig, the Sensor will display its messag. Selecting the "This Device" button will display all of the RootDevice embedded devices as buttons, In this case, a single "Sensor With Config" button. Selecting that button, and then selecting the "Configure" button will present the config form in figure 6 below.
 
 *Figure 6 - SensorWithConfig device at http://<span></span>10.0.0.165/device/sensorwc/setConfiguration/configForm*
 
