@@ -51,11 +51,9 @@ class SensorWithConfig : public SimpleSensor {
       DERIVED_TYPE_CHECK(Sensor);
     
 /**
- *   Copy Construction and Deletion are not allowed
+ *   Copy construction and destruction are not allowed
  */
-    private:
-      SensorWithConfig(const SensorWithConfig&)= delete;
-      SensorWithConfig& operator=(const SensorWithConfig&)= delete;
+     DEFINE_EXCLUSIONS(SensorWithConfig);         
 
 };
 

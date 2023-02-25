@@ -51,11 +51,9 @@ class SimpleSensor : public Sensor {
     char          _msg[BUFF_SIZE];
 
 /**
- *   Copy Construction and Deletion are not allowed
+ *   Copy construction and destruction are not allowed
  */
-    private:
-    SimpleSensor(const SimpleSensor&)= delete;
-    SimpleSensor& operator=(const SimpleSensor&)= delete;
+     DEFINE_EXCLUSIONS(SimpleSensor);         
 
 };
 
