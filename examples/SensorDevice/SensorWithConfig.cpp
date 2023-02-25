@@ -38,16 +38,17 @@ const char  SensorWithConfig_config_form[] PROGMEM = "<br><br><form action=\"%s\
 */
 using namespace lsc;
 
+/**
+ *   UPnP required device type, defined as urn:CompanyName:device:deviceName:version where CompanyName 
+ *   substitutes "." with "-". 
+ */
 INITIALIZE_STATIC_TYPE(SensorWithConfig);
 INITIALIZE_UPnP_TYPE(SensorWithConfig,urn:LeelanauSoftware-com:device:SensorWithConfig:1);
 
 /**
- *   Type is the UPnP required device type, defined as urn:CompanyName:device:deviceName:version where CompanyName 
- *   substitutes "." with "_". Target is the Http target for device display, which MUST be unique under the RootDevice. 
- *   In this case:
- *      http://ip-address:port/rootTarget/sensorwc 
+ * Target is the Http target for device display, which MUST be unique under the RootDevice. In this case:
+ *      http://ip-address:port/rootTarget/sensor 
  *   where rootTarget is set on the RootDevice.
- *   Configuration is managed via http handler and form handler set on the Get/SetConfiguration services, included with Sensor.
  */
 SensorWithConfig::SensorWithConfig() : SimpleSensor("sensorwc") {
   setDisplayName("Sensor With Config");
