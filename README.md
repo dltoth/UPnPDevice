@@ -242,7 +242,7 @@ Device hierarchy is defined with base UPnPDevice *d* and CustomDevice *c* added 
 
 The RootDevice setup() function runs through each embedded device calling setup() for that device.
 
-**Note:** The RootDevice registers HTTP request handlers for both the base URL (http://IPAddress:port/) and root target URL (http://IPAddress:port/root/), so each RootDevice requires its own WebServer with unique port. It is customary however, to have only a single RootDevice per ESP device. This shouldn't present a problem since UPnPDevices and UPnPServices provide building blocks for functionality and RootDevice functions mainly as a container.
+**Note:** The RootDevice registers HTTP request handlers for both the base URL (http://<span></span>IPAddress:port/) and root target URL (http://<span></span>IPAddress:port/root/), so each RootDevice requires its own WebServer with unique port. It is customary however, to have only a single RootDevice per ESP device. This shouldn't present a problem since UPnPDevices and UPnPServices provide building blocks for functionality and RootDevice functions mainly as a container.
 
 The remainder of the sketch outputs UPnPDevice info for the heirarchy to Serial, and then runs through down-cast from CustomDevice* to UPnPObject* and up-cast from UPnPObject* to CustomDevice*, using RTTI and UPnP device type.
 
@@ -288,7 +288,7 @@ cusDev (virtual) UPnP Type is urn:CompanyName-com:device:CustomDevice:1 and (sta
 
 UPnPObject* virtual UPnP Type is *urn:CompanyName-com:device:CustomDevice:1* and (static) upnpType is *urn:LeelanauSoftware-com:device:Object:1*
 
-In this example, the RootDevice is displayed at http://10.0.0.78:80, and the display will consist of a list of buttons, one for each of *Custom Device* and *Base Device*, and a *This Device* button (see figure 1 below). Selecting *This Device* will go to the url http://10.0.0.78:80/root and consist of only the two buttons, one for each device. The reason for this subtle difference will be more apparent in the discussion on Sensors below, but essentially, at the base url http://10.0.0.78:80, the display for Sensors and Controls are displayed inline with the RootDevice display, but non-Sensors (Controls) are displayed ad buttons.
+In this example, the RootDevice is displayed at http://<span></span>10.0.0.78:80, and the display will consist of a list of buttons, one for each of *Custom Device* and *Base Device*, and a *This Device* button (see figure 1 below). Selecting *This Device* will go to the url http://<span></span>10.0.0.78:80/root and consist of only the two buttons, one for each device. The reason for this subtle difference will be more apparent in the discussion on Sensors below, but essentially, at the base url http://<span></span>10.0.0.78:80, the display for Sensors and Controls are displayed inline with the RootDevice display, but non-Sensors (Controls) are displayed ad buttons.
 
 *Figure 1 - RootDevice display at http://10.0.0.78:80/root*
 
