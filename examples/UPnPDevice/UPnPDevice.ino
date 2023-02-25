@@ -47,7 +47,7 @@ void setup() {
   Serial.printf("Connecting to Access Point %s\n",AP_SSID);
   while(WiFi.status() != WL_CONNECTED) {Serial.print(".");delay(500);}
 
-  Serial.printf("WiFi Connected to %s with IP address: %s\n",WiFi.SSID().c_str(),WiFi.localIP().toString().c_str());
+  Serial.printf("\nWiFi Connected to %s with IP address: %s\n",WiFi.SSID().c_str(),WiFi.localIP().toString().c_str());
 
   server.begin();
   ctx.setup(svr,WiFi.localIP(),SERVER_PORT);
