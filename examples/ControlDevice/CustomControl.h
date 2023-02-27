@@ -2,8 +2,8 @@
  * 
  */
 
-#ifndef CONTROLTEST_H
-#define CONTROLTEST_H
+#ifndef CUSTOMCONTROL_H
+#define CUSTOMCONTROL_H
 
 #include <CommonProgmem.h>
 #include "Control.h"
