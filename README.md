@@ -26,7 +26,7 @@ In what follows, a conceptual framework for the library is presented, and 4 exam
  1. Creating a custom UPnPDevice and hierarchy
  2. Creating a simple Sensor that displays a message
  3. Adding configuration to that Sensor
- 4. Creating a simple control implementing a toggle.
+ 4. Creating a custom control that implements a toggle.
 
 ## Conceptual Framework
 
@@ -541,7 +541,7 @@ HTTP request handlers are set on the Sensor GetConfiguration and SetConfiguratio
 to each service is provided by Sensor::setConfiguration() and Sensor::getConfiguration() respectively. The form
 handler will present a configuration form, where form submission triggers setConfiguration().
 
-**Note:** The HTTP request handlers for GetConfigutation and SetConfiguration have already been set on the service and registerred on setup. Setting the handler here is actually a level of indirection that allows these services to be reused in multiple settings.
+**Note:** The HTTP request handlers for GetConfigutation and SetConfiguration have already been set on the service and registered on setup. Setting the handler here is actually a level of indirection that allows these services to be reused in multiple settings.
 
 ```
 SensorWithConfig::SensorWithConfig() : SimpleSensor("sensorwc") {
@@ -552,7 +552,7 @@ SensorWithConfig::SensorWithConfig() : SimpleSensor("sensorwc") {
 }
 ```
 
-***Define HTTP Request Handlers***
+**Define HTTP Request Handlers**
 
 The HTTP request handler for setting configuration expects only two possible arguments, either
 DISPLAYNAME or MSG. 
@@ -621,6 +621,155 @@ Now, using the same sketch [here](https://github.com/dltoth/UPnPDevice/blob/main
 
 ![image6](/assets/image6.png)
 
+The Sensor message can now be changed. 
+
 ## Creating a Custom Control
+
+This final example will demonstrate how to create a custom Control consisting of a single toggle. The main difference between a Sensor and a Control is that HTML for a Sensor is inserted inline with the display HTML for a RootDevice, and a Control is displayed by inserting a link to its display in an iFrame in the RootDevice HTML. Both Sensors and Controls implement the content method:
+
+```
+void             content(char buffer[], int size);
+```
+
+for their HTML display but from the RootDevice perspective, Control display is indirect via iFrame. There are a few reasons for this:
+
+1. With up to 8 embedded devices, the RootDevice HTML buffer would have to be quite large to accomodate complex display for each device if it were inline.
+2. iFrame refresh is faster than refreshing the entire RootDevice page.
+
+Now, consider the [CustomControl](https://github.com/dltoth/UPnPDevice/blob/main/examples/ControlDevice) example and starting with the header file defining [CustomControl](https://github.com/dltoth/UPnPDevice/blob/main/examples/ControlDevice/CustomControl.h), notice the following:
+
+**CustomControl Derives from Control**
+
+```
+class CustomControl : public Control {
+
+  public: 
+      CustomControl() : Control("customControl") {setDisplayName("Custom Control");}
+
+      CustomControl( const char* target ) : Control(target) {setDisplayName("Custom Control");}
+```
+
+**iFrame Height**
+
+Frame height tells the RootDevice how much vertical space is required by the Control
+
+```
+      virtual int     frameHeight()  {return 100;}       // Frame height from Control
+```
+
+**State Management**
+
+CustomControl State management is provided by the following methods:
+
+```
+      void            setState(WebContext* svr);                                      
+      
+      boolean         isON()                      {return(getControlState() == ON);}  
+      boolean         isOFF()                     {return(getControlState() == OFF);} 
+      ControlState    getControlState()           {return(_state);}                  
+      const char*     controlState()              {return((isON())?("ON"):("OFF"));}   
+```
+
+In particular, 
+
+```
+      void            setState(WebContext* svr);                                       
+```
+
+is the HTTP request handler for the toggle button press. Ultimately, this method is registerred with the Web server in setup().
+
+Now, moving on to the implementation file [CustomControl.cpp](https://github.com/dltoth/UPnPDevice/blob/main/examples/ControlDevice/CustomControl.cpp), notice the following:
+
+**HTML Templates in PROGMEM**
+
+As before, HTML templates are defined as const char[] in PROGMEM. In particular
+
+```
+const char relay_on[]   PROGMEM = "<div align=\"center\"><a href=\"./setState?STATE=OFF\" class=\"toggle\"><input class=\"toggle-checkbox\" type=\"checkbox\" checked>"
+                                   "<span class=\"toggle-switch\"></span></a>&emsp;ON</div>";
+
+const char relay_off[]  PROGMEM = "<div align=\"center\">&ensp;<a href=\"./setState?STATE=ON\" class=\"toggle\"><input class=\"toggle-checkbox\" type=\"checkbox\">"
+                                   "<span class=\"toggle-switch\"></span></a>&emsp;OFF</div>";
+```
+
+define the toggle entity and set the trigger as *setState*, with arguments either *ON* or *OFF*.
+
+**Define the HTTP Request Handler**
+
+The HTTP request handler takes as an argument the Web server abstraction [WebContext](https://github.com/dltoth/CommonUtil/blob/main/src/WebContext.h) which will provide arguments to the Web page call. setState expects ONLY a single argument *STATE* whose value can be either *ON* or *OFF*. Recall, these were coded in PROGMEM at the top. ControlState is then set based on the input argument.
+
+```
+void CustomControl::setState(WebContext* svr) {
+   int numArgs = svr->argCount();
+   if( numArgs > 0 ) {
+      for( int i=0; i<numArgs; i++ ) {
+         const String& argName = svr->argName(i);
+         const String& argVal = svr->arg(i);
+         if(argName.equalsIgnoreCase("STATE")) {
+            if( argVal.equalsIgnoreCase("ON")) setControlState(ON);
+            else if( argVal.equalsIgnoreCase("OFF") ) setControlState(OFF);
+            break;
+          }
+       }
+   }
+
+/** Control refresh is only within the iFrame
+ */
+   displayControl(svr);
+}
+```
+
+Lastly, notice that the display has to be refreshed based on this state change; *displayControl* refreshes iFrame content ONLY.
+
+```
+   displayControl(svr);
+```
+
+**Construct HTML Content**
+
+HTML content is inserted into the display buffer provided. Notice the formatting function [formatBuffer_P](https://github.com/dltoth/CommonUtil/blob/main/src/CommonProgmem.h) defined in [CommonUtils](https://github.com/dltoth/CommonUtil) is used here.
+
+```
+void  CustomControl::content(char buffer[], int size) {  
+  int pos = 0;
+  if( isON() ) {
+    pos = formatBuffer_P(buffer,size,pos,relay_on);  
+    pos = formatBuffer_P(buffer,size,pos,on_msg);          
+  }        
+  else {
+    pos = formatBuffer_P(buffer,size,pos,relay_off); 
+    pos = formatBuffer_P(buffer,size,pos,off_msg);          
+  }         
+}
+```
+
+format_P takes as arguments a char *buffer[]*, buffer *size*, a *pos* to start writing, a PROGMEM template, and arguments, and returns an updated writing position. Notice then that consecutive writes use the updated position *pos*.
+
+**Define Setup**
+
+Lastly, define the setup method.
+
+```
+void CustomControl::setup(WebContext* svr) {
+   Control::setup(svr);
+   char pathBuffer[100];
+   handlerPath(pathBuffer,100,"setState");
+   svr->on(pathBuffer,[this](WebContext* svr){this->setState(svr);});  
+}
+```
+
+First thing is to call setup for the base Control class, then register *setState* with the Web server. The method
+
+```
+void handlerPath(buffer,size,const char*) 
+```
+
+copies the full url to *setState* into *buffer*, so it can be registered with the Web server.
+
+The sketch [ControlDevice.ino](https://github.com/dltoth/UPnPDevice/blob/main/examples/ControlDevice/ControlDevice.ino) constructs a RootDevice and adds CustomControl. RootDevice display is shown in Figure 7 below.
+
+*Figure 7 - CustomControl device at http://<span></span>10.0.0.78/*
+
+![image7](/assets/image7.png)
 
 
