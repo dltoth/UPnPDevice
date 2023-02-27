@@ -772,4 +772,4 @@ The sketch [ControlDevice.ino](https://github.com/dltoth/UPnPDevice/blob/main/ex
 
 ![image7](/assets/image7.png)
 
-
+For a full implementation of a device that controls a relay, see [RelayControl](https://github.com/dltoth/DeviceLib/blob/main/src/RelayControl.h). 
