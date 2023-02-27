@@ -34,20 +34,17 @@ INITIALIZE_UPnP_TYPE(CustomControl,urn:LeelanauSoftware-com:device:CustomControl
  *  The only expected arguments are STATE=ON or STATE=OFF, all other arguments are ignored
  */
 void CustomControl::setState(WebContext* svr) {
-   Serial.printf("SetState Arguments: "); 
    int numArgs = svr->argCount();
    if( numArgs > 0 ) {
       for( int i=0; i<numArgs; i++ ) {
          const String& argName = svr->argName(i);
          const String& argVal = svr->arg(i);
-         Serial.printf(" %s=%s ",argName.c_str(),argVal.c_str());
          if(argName.equalsIgnoreCase("STATE")) {
             if( argVal.equalsIgnoreCase("ON")) setControlState(ON);
             else if( argVal.equalsIgnoreCase("OFF") ) setControlState(OFF);
             break;
           }
        }
-    Serial.printf("\n");
    }
 
 /** Control refresh is only within the iFrame
