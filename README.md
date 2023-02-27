@@ -456,7 +456,7 @@ Now, selecting the "Configure" button will bring up default configuration. Defau
 
 ![image5](/assets/image5.png)
 
-## Creating Custom Configuration
+## Adding Custom Configuration
 Moving on to creating custom configuration for SimpleSensor, see [SensorWithConfig.h](https://github.com/dltoth/UPnPDevice/blob/main/examples/SensorDevice/SensorWithConfig.h) and notice SensorWithConfig is a subclass of SimpleSensor. In what follows, only the important differences are discussed.
 
 **Define Required Methods**
@@ -620,5 +620,7 @@ Now, using the same sketch [here](https://github.com/dltoth/UPnPDevice/blob/main
 *Figure 6 - SensorWithConfig device at http://<span></span>10.0.0.78/device/sensorwc/setConfiguration/configForm*
 
 ![image6](/assets/image6.png)
+
+## Creating a Custom Control
 
 
