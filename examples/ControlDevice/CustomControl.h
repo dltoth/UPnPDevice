@@ -30,7 +30,7 @@ class CustomControl : public Control {
       virtual int     frameHeight()  {return 100;}       // Frame height from Control
 
 /**
- *    Relay state management
+ *    CustomControl state management
  */
       void            setState(WebContext* svr);                                                        // HttpHandler for setting ControlState
       
