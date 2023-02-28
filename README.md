@@ -144,7 +144,7 @@ class CustomDevice : public UPnPDevice {
 #endif
 ```
 
-The implementation .cpp file should contain:
+The implementation [CustomDevice.cpp](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/CustomDevice.cpp) file should contain:
 
 ```
 /**
