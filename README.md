@@ -114,7 +114,7 @@ which adds the following lines of code to a header file:
 
 ### Custom UPnPDevice
 
-The most basic custom device or service consists of constructors, RTTI definition, and initialization. The header file CustomDevice.h should consist of:
+The most basic custom device or service consists of constructors, RTTI definition, and initialization. The header file [CustomDevice.h](https://github.com/dltoth/UPnPDevice/blob/main/examples/UPnPDevice/CustomDevice.h) should consist of:
 
 ```
 /**
