@@ -676,7 +676,7 @@ In particular,
       void            setState(WebContext* svr);                                       
 ```
 
-is the HTTP request handler for the toggle button press. Ultimately, this method is registerred with the Web server in setup().
+is the HTTP request handler for the toggle button press. Ultimately, this method is registered with the Web server in setup().
 
 Now, moving on to the implementation file [CustomControl.cpp](https://github.com/dltoth/UPnPDevice/blob/main/examples/ControlDevice/CustomControl.cpp), notice the following:
 
