@@ -107,7 +107,7 @@ class ClassType {
                            static const char*      upnpType()                  {return _upnpType;} 
                            virtual const char*     getType()                   {return upnpType();}   
                            virtual boolean         isType(const char* t)       {return(strcmp(t,getType()) == 0);}  
-*
+ *
  *     
  *
  */
