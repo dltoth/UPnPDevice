@@ -104,9 +104,9 @@ class ClassType {
  *                         virtual boolean         isClassType( const ClassType* t) {return (_classType.isClassType(t) || UPnPDevice::isClassType(t) || ...);}
  *                         virtual void*           as(const ClassType* t)           {return((isClassType(t))?(this):(NULL));}
  *     _upnpType     := UPnP Device (Service) type and associated methods
-                           static const char*      upnpType()                  {return _upnpType;} 
-                           virtual const char*     getType()                   {return upnpType();}   
-                           virtual boolean         isType(const char* t)       {return(strcmp(t,getType()) == 0);}  
+ *                        static const char*      upnpType()                  {return _upnpType;} 
+ *                        virtual const char*     getType()                   {return upnpType();}   
+ *                        virtual boolean         isType(const char* t)       {return(strcmp(t,getType()) == 0);}  
  *
  *     
  *
