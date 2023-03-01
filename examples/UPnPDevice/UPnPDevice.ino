@@ -1,5 +1,23 @@
 /**
- *  Boilerplate Test Harness
+ * 
+ *  UPnPDevice Library
+ *  Copyright (C) 2023  Daniel L Toth
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published 
+ *  by the Free Software Foundation, either version 3 of the License, or any 
+ *  later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  
+ *  The author can be contacted at dan@leelanausoftware.com  
+ *
  */
 
 #include "CustomDevice.h"
@@ -7,7 +25,7 @@
 using namespace lsc;
 
 #define AP_SSID "My_SSID"
-#define AP_PSK  "My_PSK"
+#define AP_PSK  "MY_PSK"
 #define SERVER_PORT 80
 
 #ifdef ESP8266
@@ -75,12 +93,13 @@ void setup() {
   c.addService(&cs);
   d.addService(&s);
   root.addDevices(&c,&d);
-  
+
 /**
  *  Set up the device hierarchy and register HTTP request handlers
  */
-  root.setup(&ctx);
 
+  root.setup(&ctx);
+  
 /**
  *  Send UPnP device info to Serial
  */
