@@ -14,7 +14,6 @@
 */
 namespace lsc {
 
-#define TYPE_SIZE      64
 #define TARGET_SIZE    32
 #define NAME_SIZE      32
 
@@ -94,17 +93,21 @@ class ClassType {
 
 /** UPnPObject class definition.
  *  UPnPObject Class members are:
- *     _type         := The UPnP Service Type (or Device type) and Version, which must be of the form: "urn:Domain:service:type:version" (or
- *                      "urn:Domain:device:type:version"). Default value is "urn:schemas-upnp-org:service:Basic:1" (or "urn:Domain:device:type:version")
  *     _target       := The relative URL for this service. The complete URL can be constructed as "/rootTarget/deviceTarget/serviceTarget"
  *                      or "/rootTarget/serviceTarget"
  *     _parent       := A pointer to the UPnPDevice containing this service
  *     _displayName  := Name of Object for display purposes
- *     _classType    := Bespoke RTTI. Subclasses of UPnPService and UPnPDevice implement these virtual functions to participate:    
+ *    
+ *  Static Members defined in the macro DEFINE_RTTI 
+ *     _classType    := Bespoke RTTI class type and associated methods    
  *                         static const ClassType* classType()                      {return &_classType;}
  *                         virtual boolean         isClassType( const ClassType* t) {return (_classType.isClassType(t) || UPnPDevice::isClassType(t) || ...);}
  *                         virtual void*           as(const ClassType* t)           {return((isClassType(t))?(this):(NULL));}
- *
+ *     _upnpType     := UPnP Device (Service) type and associated methods
+                           static const char*      upnpType()                  {return _upnpType;} 
+                           virtual const char*     getType()                   {return upnpType();}   
+                           virtual boolean         isType(const char* t)       {return(strcmp(t,getType()) == 0);}  
+*
  *     
  *
  */
@@ -138,10 +141,9 @@ class UPnPObject {
      virtual UPnPService*    asService()                           = 0;
      virtual UPnPDevice*     asDevice()                            = 0;
      virtual void            location(char buffer[], int buffSize, IPAddress addr) = 0;
-     virtual ~UPnPObject()   {}
+     DEFINE_EXCLUSIONS(UPnPObject);         
 
    protected:
-     char                  _type[TYPE_SIZE];
      char                  _target[TARGET_SIZE];
      char                  _displayName[NAME_SIZE];
      UPnPObject*           _parent = NULL;
