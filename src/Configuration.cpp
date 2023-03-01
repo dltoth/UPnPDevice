@@ -21,14 +21,16 @@ const char Config_template[]  PROGMEM = "<?xml version=\"1.0\" encoding=\"UTF-8\
 
 INITIALIZE_STATIC_TYPE(GetConfiguration);
 INITIALIZE_STATIC_TYPE(SetConfiguration);
+INITIALIZE_UPnP_TYPE(SetConfiguration,urn:LeelanauSoftware-com:service:setConfiguration:1);
+INITIALIZE_UPnP_TYPE(GetConfiguration,urn:LeelanauSoftware-com:service:getConfiguration:1);
 
-SetConfiguration::SetConfiguration() : UPnPService("urn:LeelanauSoftwareCo-com:service:SetConfiguration:1","setConfiguration") {
+SetConfiguration::SetConfiguration() : UPnPService("setConfiguration") {
   setDisplayName("Set Configuration");
   setHttpHandler([this](WebContext*svr){this->defaultHandler(svr);});
   setFormHandler([this](WebContext*svr){this->defaultFormHandler(svr);});
 }
 
-SetConfiguration::SetConfiguration(const char* type, const char* target) : UPnPService(type,target) {
+SetConfiguration::SetConfiguration(const char* target) : UPnPService(target) {
   setDisplayName("Set Configuration");
   setHttpHandler([this](WebContext*svr){this->defaultHandler(svr);});
   setFormHandler([this](WebContext*svr){this->defaultFormHandler(svr);});
@@ -87,12 +89,12 @@ void SetConfiguration::formPath(char buffer[], size_t bufferSize) {
   handlerPath(buffer,bufferSize,"configForm");
 }
 
-GetConfiguration::GetConfiguration() : UPnPService("urn:LeelanauSoftwareCo-com:service:GetConfiguration:1","getConfiguration") {
+GetConfiguration::GetConfiguration() : UPnPService("getConfiguration") {
   setDisplayName("Get Configuration");
   setHttpHandler([this](WebContext*svr){this->defaultHandler(svr);});
 }
 
-GetConfiguration::GetConfiguration(const char* type, const char* target) : UPnPService(type,target) {
+GetConfiguration::GetConfiguration(const char* target) : UPnPService(target) {
   setDisplayName("Get Configuration");
   setHttpHandler([this](WebContext*svr){this->defaultHandler(svr);});
 }

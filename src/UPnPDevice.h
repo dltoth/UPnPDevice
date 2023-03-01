@@ -40,7 +40,7 @@ class UPnPDevice : public UPnPObject {
 
      public:
      UPnPDevice();
-     UPnPDevice(const char* type, const char* target);
+     UPnPDevice(const char* target);
   
      const char*    uuid()                         {return _uuid;}
      int            numServices()                  {return _numServices;}
@@ -62,14 +62,18 @@ class UPnPDevice : public UPnPObject {
      void addServices( T ptr, Args... args) {addServices(ptr); addServices(args...);}
 
 /**
- *   Macros to define the following Runtime Type Info:
+ *   Macros to define the following Runtime and UPnP Type Info:
  *     private: static const ClassType  _classType;             
  *     public:  static const ClassType* classType();   
  *     public:  virtual void*           as(const ClassType* t);
  *     public:  virtual boolean         isClassType( const ClassType* t);
+ *     private: static const char*      _upnpType;                                      
+ *     public:  static const char*      upnpType()                  
+ *     public:  virtual const char*     getType()                   
+ *     public:  virtual boolean         isType(const char* t)       
  */
      DEFINE_RTTI;
-     BASE_TYPE_CHECK;
+     DERIVED_TYPE_CHECK(UPnPObject);          
 
      virtual RootDevice*     asRootDevice() {return NULL;}
      virtual UPnPDevice*     asDevice()     {return this;}
@@ -87,8 +91,11 @@ class UPnPDevice : public UPnPObject {
      char               _uuid[UUID_SIZE];
      
      friend class RootDevice;
-     UPnPDevice(const UPnPDevice&)= delete;
-     UPnPDevice& operator=(const UPnPDevice&)= delete;
+
+/**
+ *   Copy construction and destruction are not allowed
+ */
+     DEFINE_EXCLUSIONS(UPnPDevice);         
 
 };
 
@@ -110,7 +117,7 @@ class RootDevice : public UPnPDevice {
 
      public:
      RootDevice();
-     RootDevice(const char* type, const char* target);
+     RootDevice(const char* target);
 
      int               serverPort()                 {return _serverPort;}
      int               numDevices()                 {return _numDevices;}
@@ -139,11 +146,15 @@ class RootDevice : public UPnPDevice {
      void addDevices( T ptr, Args... args) {addDevices(ptr); addDevices(args...);}
 
 /**
- *   Macros to define the following Runtime Type Info:
+ *   Macros to define the following Runtime and UPnP Type Info:
  *     private: static const ClassType  _classType;             
  *     public:  static const ClassType* classType();   
  *     public:  virtual void*           as(const ClassType* t);
  *     public:  virtual boolean         isClassType( const ClassType* t);
+ *     private: static const char*      _upnpType;                                      
+ *     public:  static const char*      upnpType()                  
+ *     public:  virtual const char*     getType()                   
+ *     public:  virtual boolean         isType(const char* t)       
  */
      DEFINE_RTTI;
      DERIVED_TYPE_CHECK(UPnPDevice);
@@ -164,8 +175,10 @@ class RootDevice : public UPnPDevice {
      WebContext*             _context = NULL;
      int                     _serverPort = 0;
      
-     RootDevice(const RootDevice&)= delete;
-     RootDevice& operator=(const RootDevice&)= delete;
+/**
+ *   Copy construction and destruction are not allowed
+ */
+     DEFINE_EXCLUSIONS(RootDevice);         
   
 };
 

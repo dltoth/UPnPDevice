@@ -12,14 +12,20 @@ namespace lsc {
  *  Static initializers for runtime type identification
  */
 int ClassType::_numTypes = 0;
+INITIALIZE_STATIC_TYPE(UPnPObject);
 INITIALIZE_STATIC_TYPE(UPnPService);
+
+/**
+ *   Static initialization for UPnP device type
+ */
+INITIALIZE_UPnP_TYPE(UPnPService,urn:LeelanauSoftware-com:service:Basic:1);
+INITIALIZE_UPnP_TYPE(UPnPObject,urn:LeelanauSoftware-com:device:Object:1);
 
 UPnPObject::UPnPObject() {
   _target[0]      = '\0';
   strlcpy(_displayName," ", sizeof(_displayName));  // Display name defaults to blank
 }
 
-void UPnPObject::setType(const char* type) {strlcpy(_type, type, sizeof(_type));}
 void UPnPObject::setDisplayName(const char* name) {strlcpy(_displayName, name, sizeof(_displayName));}
 
 /** 

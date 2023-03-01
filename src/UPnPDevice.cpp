@@ -13,11 +13,12 @@
 namespace lsc {
   
 /**
- *  Static initializers for runtime type identification
+ *  Static initializers for runtime type identification and UPnP device type
  */
 INITIALIZE_STATIC_TYPE(UPnPDevice);
 INITIALIZE_STATIC_TYPE(RootDevice);
-
+INITIALIZE_UPnP_TYPE(UPnPDevice,urn:LeelanauSoftware-com:device:Basic:1);
+INITIALIZE_UPnP_TYPE(RootDevice,urn:LeelanauSoftware-com:device:RootDevice:1);
 
 void getRandomBytes(unsigned char *a, int len) {for(int i=0; i<len; i++ ) a[i] = (unsigned char) rand()%255;}
 
@@ -62,11 +63,10 @@ bool isValidUUID(String uuidStr)
 
 UPnPDevice::UPnPDevice() {
   _uuid[0] = '\0';
-  sprintf(_type, "urn:LeelanauSoftwareCo-com:device:Basic:1");
   setDisplayName("Device");
 }
 
-UPnPDevice::UPnPDevice(const char* type, const char* target) : UPnPObject(type,target) {
+UPnPDevice::UPnPDevice(const char* target) : UPnPObject(target) {
   _uuid[0] = '\0';
   setDisplayName("Device");
 }
@@ -170,13 +170,13 @@ void UPnPDevice::printInfo(UPnPDevice* d) {
   } 
 }
 
-RootDevice::RootDevice() : UPnPDevice("urn:LeelanauSoftwareCo-com:device:RootDevice:1","root") {
+RootDevice::RootDevice() : UPnPDevice("root") {
   srand(getChipID());
   generateUUID(_uuid);
   setDisplayName("Root Device");
 }
 
-RootDevice::RootDevice(const char* type, const char* target) : UPnPDevice(type,target) {
+RootDevice::RootDevice(const char* target) : UPnPDevice(target) {
   srand(getChipID());
   generateUUID(_uuid);
   setDisplayName("Root Device");

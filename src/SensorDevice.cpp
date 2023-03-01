@@ -8,13 +8,14 @@
 namespace lsc {
 
 INITIALIZE_STATIC_TYPE(Sensor);
+INITIALIZE_UPnP_TYPE(Sensor,urn:LeelanauSoftware-com:device:Sensor:1);
 
-Sensor::Sensor() : UPnPDevice("urn:LeelanauSoftwareCo-com:device:Sensor:1","sensor") {
+Sensor::Sensor() : UPnPDevice("sensor") {
   addServices(getConfiguration(),setConfiguration());   // Add services for configuration
   setDisplayName("Sensor");                             // Set the eisplay name
 }
 
-Sensor::Sensor(const char* type, const char* target) : UPnPDevice(type, target) {
+Sensor::Sensor(const char* target) : UPnPDevice(target) {
   addServices(getConfiguration(),setConfiguration());   // Add services configuration
   setDisplayName("Sensor");                             // Set the eisplay name
 }

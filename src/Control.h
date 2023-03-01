@@ -19,7 +19,7 @@ namespace lsc {
 class Control : public UPnPDevice  {
     public:
       Control();
-      Control( const char* type, const char* target);
+      Control( const char* target);
 
 /**
 *   Root based url to the request handler for iFrame content display, registered with the Web server 
@@ -76,17 +76,23 @@ class Control : public UPnPDevice  {
       virtual void       displayControl(WebContext* svr);
 
 /**
- *   Macros to define the following Runtime Type Info:
+ *   Macros to define the following Runtime and UPnP Type Info:
  *     private: static const ClassType  _classType;             
  *     public:  static const ClassType* classType();   
  *     public:  virtual void*           as(const ClassType* t);
  *     public:  virtual boolean         isClassType( const ClassType* t);
+ *     private: static const char*      _upnpType;                                      
+ *     public:  static const char*      upnpType()                  
+ *     public:  virtual const char*     getType()                   
+ *     public:  virtual boolean         isType(const char* t)       
  */
       DEFINE_RTTI;
       DERIVED_TYPE_CHECK(UPnPDevice);
 
-      Control(const Control&)= delete;
-      Control& operator=(const Control&)= delete;
+/**
+ *   Copy construction and destruction are not allowed
+ */
+     DEFINE_EXCLUSIONS(Control);         
 
       private:
       GetConfiguration     _getConfiguration;

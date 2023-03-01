@@ -20,9 +20,18 @@ namespace lsc {
 
 typedef std::function<void(void)> CallbackFunction;
 
-#define DEFINE_RTTI     private: static const ClassType  _classType;                                        \
-                        public:  static const ClassType* classType()               {return &_classType;}    \
-                        public:  virtual void*           as(const ClassType* t)    {return((isClassType(t))?(this):(NULL));}
+/**
+ *   Macro to define Runtime Type Identification and UPnP Device Type
+ *   Note that the static upnpType() is tied to the class and virtual getType() is tied to the instance of an Object
+ *   the same way that classType() is tied to the class and isClassType() tied to the instance
+ */
+#define DEFINE_RTTI     private: static const ClassType  _classType;                                                           \
+                        public:  static const ClassType* classType()                 {return &_classType;}                     \
+                        public:  virtual void*           as(const ClassType* t)      {return((isClassType(t))?(this):(NULL));} \
+                        private: static const char*      _upnpType;                                                            \
+                        public:  static const char*      upnpType()                  {return _upnpType;}                       \
+                        public:  virtual const char*     getType()                   {return upnpType();}                      \
+                        public:  virtual boolean         isType(const char* t)       {return(strcmp(t,getType()) == 0);}  
 
 /**
  *   Define type check for classes derived from a single Base Class
@@ -32,7 +41,8 @@ typedef std::function<void(void)> CallbackFunction;
 /**
  *   Note that isClassType() could be defined for multiple inheritance, however the as() operator will not work correctly when the second (or subsequent) class
  *   has one or more virtual methods. The virtual methods will not properly resolve.  This RTTI subsystem is therefore to be used ONLY in single inheritance
- *   class hierarchys. 
+ *   class hierarchys. Multiple inheritance type check would look like:
+ *   virtual boolean   isClassType( const ClassType* t) {return (_classType.isClassType(t) || ClassName1::isClassType(t) || ... || ClassNameN::isClassType(t));}
  */
 
 /**
@@ -40,7 +50,7 @@ typedef std::function<void(void)> CallbackFunction;
  */
 #define BASE_TYPE_CHECK  public: virtual boolean isClassType( const ClassType* t) {return _classType.isClassType(t);}
 /**
- *   Note: This should only be necessary for classes that are NOT subclasses of UPnPService or UPnPDevice
+ *   Note: This should only be necessary for classes that are NOT subclasses of UPnPObject
  */
 
 /**
@@ -48,6 +58,21 @@ typedef std::function<void(void)> CallbackFunction;
  */
 #define INITIALIZE_STATIC_TYPE(ClassName)  const ClassType ClassName::_classType = ClassType()
 
+/**
+*    Define static initializer for device type
+*/
+#define INITIALIZE_UPnP_TYPE(className,type) const char* className::_upnpType = #type;
+
+/**
+*    Copy construction and destruction are not allowed
+*/
+#define DEFINE_EXCLUSIONS(className)      className(const className&)= delete;      \
+                                          className& operator=(const className&)= delete;
+
+
+/**
+ *    Macro to define typesafe cast of parent
+ */
 #define GET_PARENT_AS(T) ((getParent()!=NULL)?(getParent()->as(T)):(NULL))
 
 class UPnPService;
@@ -67,7 +92,7 @@ class ClassType {
     int          _typeID;
 };
 
-/** UPnPObject clss definition.
+/** UPnPObject class definition.
  *  UPnPObject Class members are:
  *     _type         := The UPnP Service Type (or Device type) and Version, which must be of the form: "urn:Domain:service:type:version" (or
  *                      "urn:Domain:device:type:version"). Default value is "urn:schemas-upnp-org:service:Basic:1" (or "urn:Domain:device:type:version")
@@ -89,14 +114,11 @@ class UPnPObject {
    public:
 
      UPnPObject();
-     UPnPObject(const char* type, const char* target) {setType(type);setTarget(target);}
+     UPnPObject(const char* target) {setTarget(target);}
 
-     void           setType(const char* type);
      void           setTarget(const char* target);
      void           setDisplayName(const char* name);
-     
-     boolean        isType(const char* t) {return(strcmp(t,getType()) == 0);}
-     const char*    getType()             {return _type;}
+    
      const char*    getTarget()           {return _target;}
      const char*    getDisplayName()      {return _displayName;}
      UPnPObject*    getParent()           {return _parent;}
@@ -105,11 +127,12 @@ class UPnPObject {
      RootDevice*    rootDevice();
      void           getPath(char buffer[], size_t size);                              // Returns a complete target path from root, including this target
      void           handlerPath(char buffer[], size_t size, const char* handlerName); // Concatenate handlerName to path
+
      static void    encodePath(char buffer[], size_t size, const char* path);         // URL Encode path into buffer. Replaces '/' with "%2F"
 
      public:
-     virtual void*           as(const ClassType* t)                = 0;
-     virtual boolean         isClassType( const ClassType* t)      = 0;
+     DEFINE_RTTI;
+     BASE_TYPE_CHECK;
      
      virtual RootDevice*     asRootDevice()                        = 0;
      virtual UPnPService*    asService()                           = 0;
@@ -118,11 +141,10 @@ class UPnPObject {
      virtual ~UPnPObject()   {}
 
    protected:
-     
-     char           _type[TYPE_SIZE];
-     char           _target[TARGET_SIZE];
-     char           _displayName[NAME_SIZE];
-     UPnPObject*    _parent = NULL;
+     char                  _type[TYPE_SIZE];
+     char                  _target[TARGET_SIZE];
+     char                  _displayName[NAME_SIZE];
+     UPnPObject*           _parent = NULL;
 
      void           setParent(UPnPObject* parent)  {_parent = parent;}
 
@@ -136,22 +158,26 @@ class UPnPObject {
 
 class UPnPService : public UPnPObject {
      public:
-     UPnPService() : UPnPObject() {sprintf(_type, "urn:LeelanauSoftwareCo-com:service:Basic:1");setDisplayName("Service");}
-     UPnPService(const char* type, const char* target) : UPnPObject(type,target) {setDisplayName("Service");};
+     UPnPService() : UPnPObject("service") {setDisplayName("Service");}
+     UPnPService(const char* target) : UPnPObject(target) {setDisplayName("Service");};
      
      void            setHttpHandler(HandlerFunction h)    {_handler = h;}
      virtual void    handleRequest(WebContext* svr)       {_handler(svr);}
 
   
 /**
- *   Macro to define the following Runtime Type Info:
+ *   Macro to define the following Runtime and UPnP Type Info:
  *     private: static const ClassType  _classType;             
  *     public:  static const ClassType* classType();   
  *     public:  virtual void*           as(const ClassType* t);
  *     public:  virtual boolean         isClassType( const ClassType* t);
+ *     private: static const char*      _upnpType;                                      
+ *     public:  static const char*      upnpType()                  
+ *     public:  virtual const char*     getType()                   
+ *     public:  virtual boolean         isType(const char* t)       
  */
      DEFINE_RTTI;
-     BASE_TYPE_CHECK;
+     DERIVED_TYPE_CHECK(UPnPObject);
 
      virtual RootDevice*      asRootDevice()  {return NULL;}
      virtual UPnPDevice*      asDevice()      {return NULL;}
@@ -162,9 +188,11 @@ class UPnPService : public UPnPObject {
      HandlerFunction          _handler = [](WebContext* svr) {};
 
      friend class             UPnPDevice;
-     UPnPService(const UPnPService&)= delete;
-     UPnPService& operator=(const UPnPService&)= delete;
-            
+
+/**
+ *   Copy construction and destruction are not allowed
+ */
+     DEFINE_EXCLUSIONS(UPnPService);         
 };
 
 } // End of namespace lsc

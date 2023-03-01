@@ -15,16 +15,17 @@ const char Control_config_form[]      PROGMEM = "<form action=\"setConfiguration
 
 namespace lsc {
 /**
- *  Static RTT initialization
+ *  Static initialization for RTT and UPnP device type
  */
 INITIALIZE_STATIC_TYPE(Control);
+INITIALIZE_UPnP_TYPE(Control,urn:LeelanauSoftware-com:device:Control:1);
 
-Control::Control() : UPnPDevice("urn:LeelanauSoftwareCo-com:device:Control:1","control") {
+Control::Control() : UPnPDevice("control") {
   addServices(getConfiguration(),setConfiguration());   // Add services for configuration
   setDisplayName("Control");
 }
 
-Control::Control(const char* name, const char* target) : UPnPDevice(name, target) {
+Control::Control(const char* target) : UPnPDevice(target) {
   addServices(getConfiguration(),setConfiguration());   // Add services for configuration
   setDisplayName("Control");
 }
