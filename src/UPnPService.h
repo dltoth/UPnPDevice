@@ -46,25 +46,23 @@ typedef std::function<void(void)> CallbackFunction;
 
 /**
  *   Define type check for base classes
- */
-#define BASE_TYPE_CHECK  public: virtual boolean isClassType( const ClassType* t) {return _classType.isClassType(t);}
-/**
  *   Note: This should only be necessary for classes that are NOT subclasses of UPnPObject
  */
+#define BASE_TYPE_CHECK  public: virtual boolean isClassType( const ClassType* t) {return _classType.isClassType(t);}
 
 /**
- *   Define static initializer for ClassName; this should appear at the top of the .cpp file when using DEFINE_RTTI
+ *   Define static initializer for className::_classType; this should appear at the top of the .cpp file when using DEFINE_RTTI
  */
-#define INITIALIZE_STATIC_TYPE(ClassName)  const ClassType ClassName::_classType = ClassType()
+#define INITIALIZE_STATIC_TYPE(className)  const ClassType className::_classType = ClassType()
 
 /**
-*    Define static initializer for device type
-*/
+ *   Define static initializer for device type className::_upnpType; this should appear at the top of the .cpp file when using DEFINE_RTTI
+ */
 #define INITIALIZE_UPnP_TYPE(className,type) const char* className::_upnpType = #type;
 
 /**
-*    Copy construction and destruction are not allowed
-*/
+ *   Copy construction and destruction are not allowed
+ */
 #define DEFINE_EXCLUSIONS(className)      className(const className&)= delete;      \
                                           className& operator=(const className&)= delete;
 
