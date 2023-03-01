@@ -772,4 +772,10 @@ The sketch [ControlDevice.ino](https://github.com/dltoth/UPnPDevice/blob/main/ex
 
 ![image7](/assets/image7.png)
 
-For a full implementation of a device that controls a relay, see [RelayControl](https://github.com/dltoth/DeviceLib/blob/main/src/RelayControl.h). 
+For a full implementation of a device that controls a relay, see [RelayControl](https://github.com/dltoth/DeviceLib/blob/main/src/RelayControl.h). A number of turnkey devices and services can be found in [DeviceLib](https://github.com/dltoth/DeviceLib). See the sketch [DeviceLib.ino](https://github.com/dltoth/DeviceLib/blob/main/examples/DeviceLib/DeviceLib.ino) for an example of an [ExtendedDevice](https://github.com/dltoth/DeviceLib/blob/main/src/ExtendedDevice.h) container with several embedded UPnPDevices and Services. ExtendedDevice is a RootDevice that will also search the local network for nearby RootDevices. See ExtendedDevice display in Figure 8 below.
+
+*Figure 8 - ExtendedDevice display at http://<span></span>10.0.0.78/*
+
+![image8](/assets/image8.png)
+
+
