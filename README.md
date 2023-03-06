@@ -199,7 +199,7 @@ Device hierarchy is defined inside of the setup() routine, but first, WebContext
   ctx.setup(svr,WiFi.localIP(),SERVER_PORT);
 ```
 
-Device hierarchy is defined with base UPnPDevice *d* and CustomDevice *c* added to the RoodDevice *root*, with base UPnPService *s* added to *d*, and CustomService *cs* added to c.
+Device hierarchy is defined with base UPnPDevice *d* and CustomDevice *c* added to the RootDevice *root*, with base UPnPService *s* added to *d*, and CustomService *cs* added to c.
 
 **Building Devices and Setting Hierarchy**
 
