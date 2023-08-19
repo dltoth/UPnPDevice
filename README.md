@@ -67,7 +67,7 @@ The macros add the following lines of code to the header file for the class:
 ```
 **Notes:** 
 1. The static form upnpType() is used for device search, and tied to the class, as in Thermometer::upnpType(). The virtual form getType() will provide the device type regardless of how a pointer to the device is cast. 
-2. The macro DERIVED_TYPE_CHECK(*baseName*) declares *baseName* as being a subclass of the class being defined. 
+2. The macro DERIVED_TYPE_CHECK(*baseName*) declares *baseName* as being the base class of the class being defined. 
 3. The static members *_classType* and *_upnpType* must be initialized in the .cpp file with macros:
 
 ```
