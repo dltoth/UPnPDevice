@@ -231,7 +231,7 @@ Device hierarchy is defined with base UPnPDevice *d* and CustomDevice *c* added 
 
 **Note:** Display name is used in HTML display and target is used in url creation. HTML request handlers are set on target urls, so targets must be unique relative to RootDevice and UPnPDevices. Also note that display name and target can be set in the constructor for CustomDevice, so the default constructor could be used in the sketch.
 
-**Registerring HTTP Request Handlers**
+**Registering HTTP Request Handlers**
 
 ```
 /**
